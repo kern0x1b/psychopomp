@@ -116,8 +116,9 @@ test -f <installdir>/manifest.txt && echo built || echo not-built
 - `built`: the compiler is there; the first configure finishes in seconds.
 - `not-built`: the first configure compiles it from source (step 6). `--info` may leave an empty
   folder at that path; an install counts only with its `manifest.txt`.
-- The same log shows `require(charon@ld64)` and `require(charon@iphoneos-sdk 16.4)` with their own
-  `installdir:` lines; test them the same way for the whole picture. For a Swift app, check
+- The same log shows `require(charon@iphoneos-sdk 16.4):` and `require(charon@ld64):` with their
+  own `installdir:` lines; test them the same way for the whole picture. ld64 is printed without
+  its version because it arrives first as the SDK package's dependency, which names none. For a Swift app, check
   `/s/swift-runtime/` and `/s/swift/` the same way once the project requires them.
 
 ## 6. Configure once, and pay the first-build cost
