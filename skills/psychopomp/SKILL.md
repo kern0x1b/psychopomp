@@ -33,6 +33,10 @@ When a step needs to understand or change the build itself, the `xmake-*` skills
 - **Nothing of Apple's goes into the project.** No firmware, no dyld cache, no SDK header or
   framework copied in, no Apple artwork. The build reads them from where Charon keeps them on the
   user's machine.
+- **Native, or say it cannot be done.** Every change is the way the system and the stack intend
+  it: public API or a Charon backport, never a private trick, a stub, a disabled check or a copied
+  file standing in for a build step. Before a step's evidence goes into `## Progress`, follow the
+  skill `self-review`; what cannot be done natively goes to the user and under `## Limits`.
 - **Evidence, not belief.** A step is done when its check has run and its output says so. Record
   the command and the line that proves it in `## Progress`. A build that "should" pass has not
   passed; an emulator run that did not happen is not described.

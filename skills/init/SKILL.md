@@ -103,6 +103,8 @@ At the project root, in the user's words where they gave words:
 - `## Progress` — one line per step, filled in by the later skills with the evidence (a log path,
   the verdict line, the `.deb` path): install, firmware, project, build, emulator, package, device,
   repository.
+- `## Limits` — empty at first; later steps write here what the stack could not do natively, with
+  what was measured.
 
 Then follow the skill `install`.
 
