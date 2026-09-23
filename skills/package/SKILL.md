@@ -27,7 +27,7 @@ Fields, one per line, `Field: value`:
 | Field | Value |
 | --- | --- |
 | `Package` | **required**; the package name from `PROJECT.md` (lower case, usually the bundle identifier). It names the `.deb` file |
-| `Architecture` | **required**; `iphoneos-arm`, what Cydia and dpkg install on the jailbroken releases this stack builds for, 32- and 64-bit alike |
+| `Architecture` | **required**; `iphoneos-arm`, what Cydia and dpkg install on the rootful jailbreaks of the releases this stack builds for, 32- and 64-bit alike |
 | `Name` | the display name a package manager shows |
 | `Maintainer` | `Name <email>` from `PROJECT.md`; `Author` likewise if the author differs |
 | `Section` | a Cydia section, for example `Utilities`, `Games` |
@@ -48,7 +48,7 @@ executable), `charon.install` (the folder the `.app` goes to instead of `/Applic
 ## 2. Write the package
 
 ```
-xmake deb -y > .logs/deb.log 2>&1
+xmake deb -y -v > .logs/deb.log 2>&1
 ```
 
 `-o DIR` writes the packages to DIR instead of the build directory; a target name as the last
@@ -56,12 +56,14 @@ argument packages only the control file that target names.
 
 Check, in `.logs/deb.log`: a line `deb build/<Package>_<Version>_iphoneos-arm.deb`, and for an app
 with backports a line `deb build/org.charon.apple-backports_<release>+<digest>_iphoneos-arm.deb`
-before it; no `error:`. Warnings about selectors or backports that are `inert`/`absent` are the
-skill `build`'s and `backports`' concern; read them, do not skip them.
+before it; no `error:`, no `add -v for getting more warnings` (without `-v` xmake shows only the
+first warning). Selector warnings are the skills `build`'s and `backports`' concern: `xmake deb`
+does not refuse them, so read every one, do not skip them.
 
 When `xmake deb` stops with `these imports are not exported by the device's iOS:` and a symbol the
-binary "weakly imports": the app calls an API the release lacks with no backport carrying it. Go back to skill `backports` (a missing config,
-or an API that needs a version check); never waive it to get a package.
+binary "weakly imports": the app calls an API the release lacks with no backport carrying it. Go
+back to skill `backports` (a missing config, or an API that needs a version check); never waive it
+to get a package.
 
 ## 3. Inspect it
 
@@ -111,7 +113,7 @@ Record in `PROJECT.md` `## Progress`: the `.deb` paths, and the `Package`, `Vers
   the build adds it with the exact version of the package it just wrote.
 - Shipping only the app's `.deb` → it cannot be installed where the backports package is missing;
   ship every `.deb` the step wrote.
-- `Architecture: armv7` or `iphoneos-armv7` → package managers of jailbroken iOS install only
+- `Architecture: armv7` or `iphoneos-armv7` → package managers of rootful jailbroken iOS install only
   `iphoneos-arm`; the CPU architecture is in the binary, not in the control file.
 - Reusing a version for a changed app → a device that has it installed treats it as the same
   package; raise the version.

@@ -71,6 +71,7 @@ When you report a step as done, say one of:
 ## Traps
 
 - Reviewing only the last edit → review the whole step; a crutch added early survives otherwise.
-- A green build as proof → the build proves it links against the release; only the emulator or the
-  device proves it runs.
+- A green build as proof → the build proves it links against the release. A probe's verdict in the
+  emulator proves the code it exercises; only the device proves the app itself launches and draws
+  (skill `emulate`, "Checking an app").
 - Recording evidence from memory → copy the line from the output of the command you ran.

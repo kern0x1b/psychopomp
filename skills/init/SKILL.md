@@ -51,7 +51,8 @@ something the stack cannot do, say what fails and where, and ask again.
    below that needs the link flag the skill `project` gives). Each device has a highest release it
    can run: check the pair against the devices in node 4.
 3. **Releases to check** [2] — which releases the app is verified on. The emulator boots only some:
-   iOS 3.0 to 6.1.3 on the devices it has profiles for; iOS 7 is declared but has never been booted;
+   firmware from iOS 3.0 through 6.1.3 (Shade's README), and not every device and release pair in
+   that range has been booted; iOS 7 is declared but has never been booted;
    iOS 8 and 9 cannot be emulated. A release outside that range is verified on a real device or not
    at all — say so in the question.
 4. **Devices** [2] — by model identifier. Emulator profiles exist for `iPhone1,1`, `iPhone1,2`,

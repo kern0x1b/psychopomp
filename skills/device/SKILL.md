@@ -29,6 +29,8 @@ Do not touch the device before the user says it is connected and you may.
    passwd mobile
    ```
 
+   Over USB (step 2 starts the tunnel), the address is `-p 2222 root@127.0.0.1`.
+
    The `-o` options admit the old key exchange and ciphers an old OpenSSH speaks; `xmake device`
    adds the same ones itself.
 4. Key login instead of a password is the user's choice: an RSA key (`ssh-keygen -t rsa`) appended to
@@ -87,14 +89,18 @@ belongs to another bundle identifier, copies each `.deb` to `/tmp` on the device
 then `su mobile -c uicache` so SpringBoard shows the icon.
 
 How to know it worked: one `installed <package>_<version>_iphoneos-arm.deb on <host:port>` line per
-package, then
+package (over Wi-Fi that line holds the device's address: replace it with `<device>` in any log you
+keep), then
 
 ```
 xmake device run "dpkg -s <package>"             # Status: install ok installed, and the Version you built
 ```
 
-A refusal naming another bundle identifier: remove the installed app first (step 7) — installing over
-it makes SpringBoard lose the app until a reboot.
+A refusal naming another bundle identifier (`/Applications/<Name>.app on the phone is <other id>,
+and this package installs <id> over it`): find the package that owns it with
+`xmake device run "dpkg -S /Applications/<Name>.app"`. If it is one you installed, remove it
+(step 7); if not, it is the user's, so ask them before removing anything. Installing over it makes
+SpringBoard lose the app until a reboot.
 
 ## 4. Launch
 
@@ -133,11 +139,13 @@ a launch: the app does not get the screen.
 ## 6. Crash logs
 
 ```
-xmake device run "ls -t /var/mobile/Library/Logs/CrashReporter/"
-xmake device run "cat '/var/mobile/Library/Logs/CrashReporter/<newest file named after the executable>'" > .logs/crash-<date>.txt
+xmake device run "ls -t /var/mobile/Library/Logs/CrashReporter/<Name>_*"
+xmake device run "cat /var/mobile/Library/Logs/CrashReporter/<the newest of those files>" > .logs/crash-<date>.txt
 ```
 
-A process that runs as root (a probe) leaves its report in `/var/logs/CrashReporter/` instead. Read
+Let the device's shell match only the app's own reports (`<Name>_*`, `<Name>` the executable): a
+listing of the whole folder names every app the user ran and when. A process that runs as root (a
+probe) leaves its report in `/var/logs/CrashReporter/<probe>_*` instead. Read
 the exception type, the crashed thread and the frames in the app's image; open no other app's report.
 For a crash you can reproduce in a probe, the emulator's debugger names the frames (skill `emulate`).
 
@@ -187,12 +195,13 @@ read or the user's own words on what they saw. Then, if the app is also publishe
 - `device.env` committed → it holds the root password; `.gitignore` it before it exists.
 - Expecting `xmake device` to launch, tap or take a shot → it cannot; the user taps, and you read the
   app's log file.
-- `NSLog` as the app's report → it is not a channel you can rely on (from an app started through
-  SpringBoardServices it never reaches the system log); read the app's own `printf` file.
+- `NSLog` as the app's report → it reaches only the streamed system log, over USB, among every
+  other app's lines; read the app's own `printf` file instead.
 - An app that dies at launch with no crash report → run the executable as mobile once (step 4);
   dyld's message goes to stderr only.
 - A directory created over SSH for the app → root owns it; create it as mobile and check with `touch`.
 - Wi-Fi on a network the user does not control → `xmake device` does not verify the device's host key;
   use USB there.
 - `-s` with `run` → it bounds `log` only; a `run` command that never ends blocks: end it yourself
-  (`& sleep N; kill $!`).
+  (`xmake device run "<command> & sleep N; kill \$!"`: the `\` keeps the Mac's shell from
+  expanding `$!` before the command reaches the device).

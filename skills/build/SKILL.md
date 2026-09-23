@@ -17,28 +17,33 @@ there; if the shared cache for the lowest release is not held, the build asks to
 ## 1. Build
 
 ```
-xmake -y > .logs/build.log 2>&1; echo "exit $?"
+xmake -y -v > .logs/build.log 2>&1; echo "exit $?"
 ```
 
-- Always `-y`, always a log file, and wait for it. The first build after `install` is quick; a
+- Always `-y`, always `-v`, always a log file, and wait for it. Without `-v` xmake prints only the
+  first warning and replaces the rest with `warning: add -v for getting more warnings ..`; a log
+  holding that line has not been read, build again with `-v`. The first build after `install` is quick; a
   build that adds a package (Swift runtime, backports) may build it from source first.
-- `xmake -r -y` rebuilds the project's own files; `xmake f -c -y` re-resolves the configuration
-  and packages after a change to `add_requires` or a package's configs. Neither touches the
-  shared store; nothing here needs `--force`.
-- `xmake -v -y` prints every command and every check's own line; use it when a failure is
-  unclear.
+- `xmake -r -y -v` rebuilds the project's own files; `xmake f -c -y` re-resolves the
+  configuration and packages after a change to `add_requires` or a package's configs (plain
+  `xmake f` keeps the resolution it cached). Neither touches the shared store; nothing here needs
+  `--force`.
 
 How to know it worked, all three:
 
 ```
-tail -3 .logs/build.log
+grep -n 'build ok' .logs/build.log
+grep -n '^imports: ' .logs/build.log
+grep -n 'warning: ' .logs/build.log
 ```
 
 - `[100%]: build ok, spent …`
 - `imports: every non-weak import of the armv7 slices of <n> binaries resolves against <m> exports`
-  — the import check ran; its absence means it did not.
-- no `warning: … weakly imports …` and no `warning: … sends … selector` line **after** `build ok`:
-  those are printed last and are easy to miss.
+  — the import check ran; its absence means it did not. It is printed while the bundle is
+  checked, before `build ok`.
+- no `warning: … weakly imports …`, no `warning: … sends … selector` and no
+  `add -v for getting more warnings` line. xmake prints the warnings after `build ok`, all of
+  them only with `-v`.
 
 The bundle is `build/iphoneos/<arch>/release/<Name>.app`. Check it:
 
@@ -87,12 +92,13 @@ The compiler weak-linked a newer API because its declaration carries availabilit
 the device: every use must sit behind a check (`NSClassFromString`, `respondsToSelector:`, a
 function pointer test, `#available` in Swift). `xmake deb` refuses the image unless the target
 says why every call is guarded: `set_values("charon.waive.weak-imports", "<the reason>")`. Write
-that waiver only after every use is behind such a check — it records a guard the static check
-cannot see; it is never a way to turn a refusal green. To see the packaging verdict without
+that waiver only when every use of every symbol it covers is behind such a check, the user agreed,
+and it is written under `## Limits` in `PROJECT.md` (skill `self-review`) — it records a guard the
+static check cannot see; it is never a way to turn a refusal green. To see the packaging verdict without
 packaging, build as a release:
 
 ```
-CHARON_RELEASE=1 xmake -r -y > .logs/build-release.log 2>&1
+CHARON_RELEASE=1 xmake -r -y -v > .logs/build-release.log 2>&1
 ```
 
 For symbols the compiler emits itself (ARC entry points, the block runtime, emulated TLS, wide

@@ -60,8 +60,10 @@ the addon, the same `<X>`.
 git ls-remote --tags https://github.com/kern0x1b/charon.git 'charon-repo-*' 'v*'
 ```
 
-Take the highest `<X>` for which **both** `refs/tags/charon-repo-<X>` and `refs/tags/v<X>` exist
-(0.8.10 at the time of writing). The `charon-repo-<X>` tag is the commit that lists `v<X>` among
+Pin **0.8.10**: these skills were checked against that pair, and every fact they state holds at
+it. Confirm both `refs/tags/charon-repo-0.8.10` and `refs/tags/v0.8.10` are listed. A higher pair
+may exist; moving to it is the user's decision, and then every command of these skills is to be
+checked again on the first build. The `charon-repo-<X>` tag is the commit that lists `v<X>` among
 the addon's versions, so a `v<X>` without its `charon-repo-<X>` is not installable yet. Never pin
 `main` or a range: xmake resolves those against its own clone and does not pull it again.
 
@@ -95,12 +97,14 @@ on the same Charon tag may already have built the compiler; then the first build
 Check before starting it (this also installs the addon, which is quick):
 
 ```
-xmake require -y --info llvm 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > .logs/require-info.log
-grep 'installdir: .*/l/llvm/' .logs/require-info.log
+xmake require -y --info "charon@llvm 23.1.1" 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > .logs/require-info.log
+grep -A20 'require(charon@llvm 23.1.1)' .logs/require-info.log | grep 'installdir:'
 ```
 
-It prints `-> installdir: <home>/.xmake/packages/l/llvm/23.1.1/<hash>`, the exact install this
-pin would use. Test that path:
+Ask for the package exactly as the pinned addon requires it (`charon@llvm 23.1.1` at Charon 0.8.10,
+in its `includes/apple-ios/xmake.lua`): a bare `llvm` may resolve another package, and the store
+holds several llvm installs. It prints `-> installdir: <home>/.xmake/packages/l/llvm/23.1.1/<hash>`,
+the exact install this pin would use. Test that path:
 
 ```
 test -f <installdir>/manifest.txt && echo built || echo not-built
@@ -109,7 +113,8 @@ test -f <installdir>/manifest.txt && echo built || echo not-built
 - `built`: the compiler is there; the first configure finishes in seconds.
 - `not-built`: the first configure compiles it from source (step 6). `--info` may leave an empty
   folder at that path; an install counts only with its `manifest.txt`.
-- Repeat with `/l/ld64/` and `/i/iphoneos-sdk/` for the whole picture. For a Swift app, check
+- The same log shows `require(charon@ld64)` and `require(charon@iphoneos-sdk)` with their own
+  `installdir:` lines; test them the same way for the whole picture. For a Swift app, check
   `/s/swift-runtime/` and `/s/swift/` the same way once the project requires them.
 
 ## 6. Configure once, and pay the first-build cost

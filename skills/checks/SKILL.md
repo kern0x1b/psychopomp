@@ -47,7 +47,7 @@ In the project's `xmake.lua`, one target per probe, beside the app's target:
 - `add_rules("@addon/charon/daemon")` — it installs to `/usr/libexec/<target name>`. Never build a
   probe with the host's `cc` or `clang`: the binary is for macOS and dies on the device with
   `Bad system call: 12`.
-- `add_mxflags("-fobjc-arc")` **and** `add_ldflags("-fobjc-arc")`. On the link the flag makes clang
+- `add_mflags("-fobjc-arc")` **and** `add_ldflags("-fobjc-arc")` (`add_mxflags` too for `.mm`). On the link the flag makes clang
   force-load arclite, which carries the ARC entry points into the image below iOS 5 and the
   collection subscripting methods below iOS 6.
 - The same `add_packages(...)` as the app, so it links the backports the app does.
@@ -63,10 +63,10 @@ The program:
 - A last line `checks=<N> failures=<M>`, and `return failures` from `main`.
 - A crash is a result too: install an uncaught-exception handler
   (`NSSetUncaughtExceptionHandler`) that prints `FAIL uncaught <name>: <reason>` and flushes.
-- Where the environment cannot answer (the emulator has no audio, no location daemon, no motion),
+- Where the environment may not answer (audio, location or motion in the emulator),
   print `skip <name>: <reason>` instead of a verdict — never an `ok`.
 
-How to know it worked: `xmake -y > .logs/build.log 2>&1` ends with `build ok`, and the probe's link
+How to know it worked: `xmake -y -v > .logs/build.log 2>&1` has `build ok`, and the probe's link
 line is followed by `imports: every non-weak import ... resolves`.
 
 ## 3. Run it in the emulator
@@ -88,7 +88,7 @@ prints its output, then the verdict. The exit status is the verdict:
 | `pass` | exited 0: no failure |
 | `fail(exit N)` | N checks failed; the `FAIL` lines say which |
 | `fail(spawn error 2)` | the probe is not in the image: `install` first |
-| `crash(signal N, pc ...)` | read the frames with `xmake emulate debug /usr/libexec/<probe>` |
+| `crash(signal N, pc ...)` | read the frames with `xmake emulate -d <device> -r <release> debug /usr/libexec/<probe>` (it takes the path only, no arguments) |
 | `timeout` | it waited past `-s`: a deadlock or a wait with no timeout (step 5) |
 | `boot-blocked(...)` | the emulated system never reached the probe; not the probe's fault |
 
@@ -104,7 +104,8 @@ fail:
 xmake emulate -d <device> -r <release> run /usr/libexec/<probe> --negative > .logs/probe-<release>-negative.log 2>&1
 ```
 
-It must end with `FAIL <that name>: ...` and the verdict `fail(exit 1)`. For an availability guard,
+It must print `FAIL <that name>: ...`, end with `checks=<N> failures=1`, and the verdict must be
+`fail(exit 1)`. For an availability guard,
 the control is the lowest release itself: the guarded API must be seen absent there (the guard's
 `else` branch runs), and present on a release that has it.
 
@@ -132,8 +133,10 @@ A second app target in the same project: `add_rules("@addon/charon/app")`, its o
 sources for the part under test. It builds its screens, drives them through the app's code, and
 reports like a probe.
 
-- **Its report is a file, not `NSLog`.** `NSLog` from an app is not a channel you can rely on: from
-  an app started through SpringBoardServices it never reaches the system log. At start, reopen
+- **Its report is a file, not `NSLog`.** The user starts the stand by tapping its icon. Its `NSLog`
+  lines go to the device's system log, which is read only over USB while it streams
+  (`xmake device log`), mixes every app's traffic, and keeps nothing for later; a file is the
+  stand's alone, stays until you read it, and is read over SSH as well. At start, reopen
   standard output onto a file the `mobile` user can write — `freopen(path, "w", stdout)` then
   `setvbuf(stdout, NULL, _IOLBF, 0)` — and print with `printf` + `fflush` as a probe does.
 - **The file is written by `mobile`.** An app runs as `mobile`, SSH as `root`; a directory made over
@@ -174,8 +177,8 @@ does not boot) is written down as unchecked, with the reason.
 - A check with no negative control → it may be unable to fail; flip one expectation once.
 - An expectation taken from the code's own first output → the check agrees with the bug; take it
   from documentation, a newer system or the real server.
-- `skip` counted as `ok` → the emulator cannot answer for audio, location or motion; those need the
-  device.
+- `skip` counted as `ok` → where the emulator does not answer (audio, location, motion), the check
+  is unchecked there; it needs the device.
 - A UIKit check in the emulator → the app never reaches `didFinishLaunching` there with Charon
   0.8.10; run it as a test stand on the device, or record it as unchecked.
 - `xmake check` taken for this → it runs the host-side scripts a project declares with Charon's

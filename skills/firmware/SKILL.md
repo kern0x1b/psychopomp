@@ -48,7 +48,7 @@ The check reads the **earliest release of each architecture not older than `appl
 armv7 with `apple_minimum` 6.0 reads 6.0; an armv7 build for 6.1.3 reads 6.1.3. Fetch it:
 
 ```
-xmake firmware --arch=armv7 fetch 6.0 > .logs/firmware-6.0.log 2>&1
+xmake firmware -y --arch=armv7 fetch 6.0 > .logs/firmware-6.0.log 2>&1
 ```
 
 How to know it worked: the last line is
@@ -57,8 +57,8 @@ held, it prints that line at once and downloads nothing.
 
 - A universal app (`armv7` and `arm64`) is checked per slice: the arm64 slice reads 7.0, so fetch
   `--arch=arm64 fetch 7.0` as well.
-- Without this step the first build asks to fetch it itself (with `-y` it accepts); with no one to
-  answer it stops with `the imports of this armv7 build cannot be checked without the libraries
+- Without this step the first build asks to fetch it itself (with `-y` it accepts); answered no,
+  it stops with `the imports of this armv7 build cannot be checked without the libraries
   of iOS 6.0; run xmake firmware --arch=armv7 fetch 6.0`.
 
 ## 3. The root filesystem for each device and release to check
@@ -67,7 +67,7 @@ The emulator boots a device's own userland. For every device and release pair in
 that will be checked in the emulator:
 
 ```
-xmake firmware --device=iPhone3,1 rootfs 6.0 > .logs/rootfs-iPhone3,1-6.0.log 2>&1
+xmake firmware -y --device=iPhone3,1 rootfs 6.0 > .logs/rootfs-iPhone3,1-6.0.log 2>&1
 ```
 
 How to know it worked: the last line is
@@ -78,7 +78,8 @@ really is. A pair already unpacked prints its line at once.
 The first `xmake emulate` run of a device and release unpacks this by itself if it is missing;
 doing it here moves the download out of the emulator step and shows early whether the firmware
 exists for that device. Which pairs the emulator can boot is the skill `emulate`'s business
-(iOS 8 and 9 cannot be emulated; a real device checks those).
+(iOS 7 is declared and has never been booted; iOS 8 and 9 cannot be emulated; a real device
+checks those).
 
 ## 4. The class inventory (optional, for writing code)
 
@@ -86,7 +87,7 @@ To answer "does this class exist on this release", write the release's Objective
 somewhere you can read it:
 
 ```
-xmake firmware --arch=armv7 --output=.logs/classes-6.0.json classes 6.0
+xmake firmware -y --arch=armv7 --output=.logs/classes-6.0.json classes 6.0
 ```
 
 It prints `…/classes-6.0.json: the Objective-C classes of iOS 6.0 for armv7`. The JSON has

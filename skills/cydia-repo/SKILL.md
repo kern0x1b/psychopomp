@@ -32,7 +32,7 @@ Never `Version:` or `Installed-Size:` — Charon writes both and refuses a contr
 Then write the package again, the app's alone:
 
 ```
-xmake deb -y <app target> > .logs/deb.log 2>&1
+xmake deb -y -v <app target> > .logs/deb.log 2>&1
 ```
 
 How to know it worked: the log's `deb build/...` lines name the app's `.deb` and every dependency
@@ -64,7 +64,7 @@ runtime), and no public repository publishes Charon's packages: if this one does
 Cydia cannot install the app.
 
 ```
-cp build/<app package>_<version>_iphoneos-arm.deb build/org.charon.apple-backports_<version>_iphoneos-arm.deb <repo>/debs/
+cp build/<app package>_<app version>_iphoneos-arm.deb build/org.charon.apple-backports_<backports version>_iphoneos-arm.deb <repo>/debs/
 ```
 
 Copy by the names the log printed, never `build/*.deb`: the build directory also holds older

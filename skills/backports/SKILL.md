@@ -36,22 +36,31 @@ Before that, read the same files in the Charon repository at the pinned tag
 (`packages/a/apple-backports/registry/` at `charon-repo-0.8.10` on GitHub, or in the project's
 clone under `.xmake/<host>/<arch>/repositories/charon/` once `xmake f` has run). Search the API as
 the app writes it: a class `UIStackView`, a method `+[NSLayoutConstraint activateConstraints:]`
-or `-[UIView centerXAnchor]`, a property `UIScreen.captured`, a function `Name()`, a constant by
-its symbol. `packages/a/apple-backports/README.md` beside it explains, release by release, what
+or `-[UIView centerXAnchor]`, a property as `Class.property` (both accessors in one entry, e.g.
+`UIScreen.calibratedLatency`), a function `Name()`, a constant by its symbol. A property may also
+appear by its getter, `-[Class property]`: search both spellings. `packages/a/apple-backports/README.md` beside it explains, release by release, what
 is carried with a difference and what is refused and why.
 
 An entry's `status` decides:
 
 | `status` | What the app gets | What to do |
 | --- | --- | --- |
-| `implemented` | the real behaviour (of the newest implementation), with facts and tests behind it | use it; read its `facts` file when the behaviour matters |
+| `implemented` | the real behaviour; the entry names its `facts` file when the package carries the behaviour itself, or its `source` when the release already has it | use it; read the `facts` file when the behaviour matters |
 | `inert` | declared, does nothing, says so once in the device log | use only where doing nothing is acceptable to the user (a visual effect, haptics); tell them |
-| `absent` | not there: `NSClassFromString` answers nil, `respondsToSelector:` answers NO, a direct reference crashes | the release's own API, or a version check with a fallback |
-| `ignored` | the call reaches the release's own implementation, which does something else; `effect` says what | treat as absent for anything the app relies on |
-| no entry | the backports never considered it | absent |
+| `absent` | not there, and `respondsToSelector:` / `NSClassFromString` answer honestly (NO, nil); only a message a real object does not implement, or a compile-time reference to the class, crashes | the release's own API, or a version check with a fallback |
+| `ignored` | the call reaches the release's own implementation, which answers `respondsToSelector:` with YES and does something else; `effect` says what | treat as absent for anything the app relies on |
+| no entry | the package carries nothing of it (a value the header holds, such as an enum case, needs no entry: the compiler writes it into the app) | absent, unless it is such a header value |
 
+`absent` is the default, not always a decision: it is required where quiet inaction would corrupt
+data or mislead (security, saving, payment, permissions, the network), and elsewhere it may simply
+not be written yet. `reason` says why an entry is `absent`, `effect` what the app sees instead.
 Also read `minimum` (the entry is absent below that release — `UIStackView` needs 6.0) and
-`maximum`. If `apple_minimum` is below `minimum`, the API is absent for the app.
+`maximum` (the entry becomes absent from that release on, where the system carries the class
+itself). If `apple_minimum` is below `minimum`, the API is absent for the app.
+
+An app's build does not print the registry's verdict for the APIs it calls (the `app` rule checks
+the finished bundle, and that check does not read the registry): look every API newer than
+`apple_minimum` up here yourself, and record each status in `PROJECT.md`.
 
 ## 2. Choose the configs
 
@@ -90,7 +99,7 @@ add_packages("apple-backports")
 Nothing else: not `app.frameworks`, not `charon.libraries`, no `add_links`. The backports are
 one copy per process and live in `/usr/lib/charon/org.charon.apple-backports/` on the device,
 installed by their own package; the app's bundle carries none of them. Then configure:
-`xmake f -p iphoneos -a armv7 -y > .logs/config.log 2>&1`.
+`xmake f -c -y > .logs/configure.log 2>&1`.
 
 The first configure with a new set of configs builds the package: its libraries once per band of
 releases (from `apple_minimum` up to the last release an armv7 device gets), each checked against
@@ -98,7 +107,8 @@ the dyld caches of that band's first and last release, which are fetched from Ap
 they are not held (skill `firmware`). Expect minutes to tens of minutes. Check: the log ends with
 `install apple-backports latest .. ok`.
 
-A changed config is a different package: `xmake f -y` installs it. Never `xmake require --force`,
+A changed config is a different package: `xmake f -c -y` resolves and installs it (plain `xmake f`
+keeps the resolution it cached). Never `xmake require --force`,
 never delete the old install; it is another path in the shared store.
 
 ## 4. Write the code
@@ -124,9 +134,7 @@ Build with `xmake -y -v > .logs/build.log 2>&1` — xmake prints only the first 
   implement. A missing config again, or a call that must sit behind `respondsToSelector:`.
   `xmake deb` does **not** refuse this one; it crashes on the device with "unrecognized selector".
   Clear every such line before packaging.
-- `… calls N API the backports do not carry as the release that added them does:` followed by
-  `API (iOS x) is inert|absent|ignored: effect` — the registry's verdict on what the app uses; act
-  on each as in step 1.
+- No line tells you an API is `inert`, `absent` or `ignored`: that is the registry's, read in step 1.
 
 ## 6. What the package then needs
 
@@ -154,5 +162,6 @@ and the build log with no weak-import or selector warning left.
   one process are two classes; the backports come only from their own package.
 - An API only on Charon main (a config missing at the pin) → not available at 0.8.10; ask the user
   before moving the pin.
-- `absent` read as "not implemented yet, call it anyway" → it is absent on purpose (security,
-  saving, permissions, the network): the app must take the older path.
+- `absent` read as "call it anyway" → the release has nothing behind it: the app must take the
+  older path, whether the entry is absent by decision (security, saving, permissions, the network)
+  or by default.

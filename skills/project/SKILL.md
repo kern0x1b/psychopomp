@@ -63,8 +63,10 @@ Write these lines yourself, one decision each:
 - the resources: `set_values("app.resources", "resources")`. Each named folder's contents are
   copied flat into the bundle; a named file is copied as is;
 - optional: `add_values("app.plist", "KEY=VALUE")` overrides one string key over the file;
-  `set_values("app.url-scheme", "<scheme>")` registers a URL scheme; `app.frameworks` bundles a
-  shared-library target of the project into `Frameworks/`.
+  `set_values("app.url-scheme", "<scheme>")` registers one URL scheme and replaces any
+  `CFBundleURLTypes` the plist has (write the key yourself for more than one); `app.frameworks`
+  bundles into `Frameworks/` a shared-library target of the project or a package the target adds,
+  by the name the target knows it by.
 
 A Swift target adds Charon's `swift` rule and the Swift runtime packages; the package control file
 and maintainer are the skill `package`'s.

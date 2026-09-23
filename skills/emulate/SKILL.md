@@ -24,15 +24,16 @@ launch an app the way a user's tap does; what it can prove about an app is narro
   to iOS 7, with gaps among the point releases (3.1.x, 4.1 and 4.3.1 to 4.3.5 among them), and
   none from 8.0 on — iOS 8 and 9 cannot be emulated. A release without a kernel is refused with the
   list of kernels the emulator has.
-- **Known to boot to SpringBoard:** iPhone 3GS on 3.0, 4.0, 4.2.1, 5.0, 5.1.1 and 6.0; iPhone 3G
-  (`iPhone1,2`) on 4.2.1; iPhone 4 on 6.0; iPhone 4S on 6.1.3. Every other pair in the lists
-  above — iOS 7 on anything, any iPad, any iPod touch — is declared but has not been booted: plan
-  for `boot-blocked` and tell the user the check may not be possible.
+- **What boots:** Shade's README says it boots firmware from iPhone OS 3.0 through iOS 6.1.3 in
+  Charon's acceptance runs; iOS 7 is declared and has never been booted. Not every device and
+  release pair inside that range has been booted: until one has on this machine, tell the user the
+  check may not be possible. A pair that does not boot fails at its first `install` (§3), before
+  any run.
 - `-r RELEASE` picks the device's **earliest firmware not older than** that release: `-r 6.1` on
-  an iPhone 4S emulates 6.1.3 if that is the first 6.1.x firmware the catalog lists for it. The
-  line the run prints names the version and build actually emulated; record that one.
-- No audio (no working audio daemon), no network unless asked (§3), no camera, no GPS, no
-  cellular. The display is drawn in software.
+  an iPhone 4S emulates 6.1 (10B142), not 6.1.3. Pass the exact release from `PROJECT.md`; the
+  line the run prints names the version and build actually emulated, record that one.
+- Audio may not work in the emulator: an audio failure there is unchecked, not the app's fault.
+  No network unless asked (§3), no camera, no GPS, no cellular. The display is drawn in software.
 
 ## 2. Add the emulator to the project
 
@@ -69,7 +70,10 @@ the image the way dpkg does (`DPKG_ROOT`). The backports' `postinst` links the l
 the image's own release and refuses a release outside its bands.
 
 Check: one line `installed <file>.deb into <device> <version>` per package, and no `refused this
-image`. It does **not** run `uicache`: SpringBoard of that image does not know the app's icon.
+image`. The first `install` on a device and release also boots and builds its golden image; if that
+boot fails, `install` stops with `<device> <build> did not get past <stage> within <n> seconds; the
+emulator log is <path>`. No run and no verdict follow: record the pair as "not checkable here" and
+tell the user. It does **not** run `uicache`: SpringBoard of that image does not know the app's icon.
 
 Network: the guest has none by default (`isolated`). `-n loopback` or `-n host` on `run`, or
 `set_values("emulate.network", "host")` on a target, gives it one; `host` shares the Mac's real
@@ -81,20 +85,24 @@ sockets.
 xmake emulate -d iPhone4,1 -r 6.1.3 [-s 60] run /absolute/path/in/the/guest [ARGS...] > .logs/emulate-run.log 2>&1
 ```
 
-A fresh clone of the installed image boots; a LaunchDaemon starts `charon-runner`, which starts
+A fresh clone of the installed image boots; launchd starts `charon-runner` (from
+`/etc/launchd.conf` up to iOS 6.x, from a LaunchDaemon from iOS 7), which starts
 the command **as root** with a deadline of `-s` seconds (default 60) once launchd loads daemons,
 and writes the command's exit status and output into the guest. The boot is stopped as soon as the
 verdict exists, and killed after `-t` seconds (default 900) whatever happens. Expect several host
 minutes per run.
 
-| Verdict (last line) | Means |
+A pass prints `pass on <device> <version> (<build>) in …`; any other verdict stops the command
+with `error: <verdict> on <device> <version> (<build>) in …; the emulator log is <path>`.
+
+| Verdict | Means |
 | --- | --- |
-| `pass on <device> <version> (<build>) in … at time scale 10` | the command exited 0 |
+| `pass` | the command exited 0 |
 | `fail(exit N)` | it exited N |
 | `fail(spawn error 2)` | there is no such file in the image: wrong path, or `install` not run |
-| `crash(signal N, pc 0x…, last frame …)` | it died on signal N; the pc is where the CPU faulted |
+| `crash(signal N, pc 0x…, last frame …)` | it died on signal N; the pc is where the CPU faulted, and the last frame is the host path of the run's `frame.png` |
 | `timeout` | still running after `-s` seconds; the runner killed it |
-| `boot-blocked(<where>…)` | the command never ran: the emulator, a process in a crash loop, SpringBoard or the data migration stopped the boot; a guest crash report's reason and a request that never got its reply are named |
+| `boot-blocked(<where>…)` | the command never ran, although the image booted at `install`: the emulator, a process in a crash loop, SpringBoard or the data migration stopped the boot; a guest crash report's reason and a request that never got its reply are named |
 
 `run` prints the command's own standard output and error before the verdict. The evidence stays in
 `~/.charon/emulator/images.noindex/<project>-<hash>/<device>_<build>/run/`: `verdict.json`
@@ -163,12 +171,15 @@ version, build and scale) and the path of the copied `verdict.json`/frame. Then 
 - Leaving out `-d`/`-r` → the run emulates `apple_minimum` on the first catalog device of the
   architecture, often not the one `PROJECT.md` names; always pass both.
 - Reading `fail(spawn error 2)` as an app bug → the path is not in the image; `install` first, and
-  pass the guest path (`/Applications/<Name>.app/<Name>`, `/usr/libexec/<name>`), not a host path.
-- `kAudioSession…NotInitialized`, silent sounds → the emulator has no audio; not the app's fault.
+  pass the guest path of a probe (`/usr/libexec/<name>`), not a host path. Never the app's own
+  executable: started by the runner it never becomes an application (§5).
+- `kAudioSession…NotInitialized`, silent sounds → audio may not work in the emulator; record it as
+  unchecked, not as the app's fault.
 - A run with `--scale 1` "to be realistic" → the guest's watchdogs expire (SpringBoard is lost to
   a mediaserverd timeout); keep 10 unless the target is `emulate.timing` strict.
-- Treating a `boot-blocked` on an unbooted pair (iOS 7, iPad, iPod touch) as the app's failure →
-  it is the emulator's coverage; report it as "not checkable here".
+- Treating a pair that does not boot (the first `install` stops with `did not get past`, or a run
+  says `boot-blocked`) as the app's failure → it is the emulator's coverage; report it as "not
+  checkable here".
 - Two commands on the same project, device and release at once → the second waits for the first
   (per-image lock); several projects may emulate at once, each boot takes one of the machine's
   slots (`min(cores/3, RAM/5 GB)`) and waits for a free one.
