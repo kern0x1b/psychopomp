@@ -84,7 +84,8 @@ has checked:
   `libcxx`. The runtime is then a Debian package of its own, which the program depends on and does
   not carry (`charon-repo-0.8.10:packages/s/swift-runtime/xmake.lua:86-90`). A shared runtime with
   a libcxx of other configs is refused (`… require charon@libcxx with the same configs as the
-  runtime does (packaged)`).
+  runtime does (packaged)`). All of this is read from the recipe: a shared runtime was not built
+  or checked at the pin, so whether its app passes `xmake deb` is not known.
 - Import check: every binary the bundle carries, the runtime's libraries included, is held to
   the same weak-import rule as the app. Only the libraries of a package the program depends on
   (the backports, a shared runtime) are exempt (`platform.lua:22-24,226-229,437-471`). At the pin

@@ -110,8 +110,9 @@ file and line if an import or a call fails (skill `xmake-troubleshooting`).
   Every option of `xmake device` and `xmake emulate` stands before the action as well.
 - Pass `-y` to anything that may prompt. Never `--force`, never `xmake require --force`.
 - **Never nest an emulator run inside `xmake test`.** An `on_test` calling `xmake emulate run`
-  does not finish, and the orphaned run keeps the project's and the store's locks (skill
-  `xmake-tests`). Never `xmake emulate` or `xmake device` from any hook: run them yourself, one
+  starts a second `xmake` in the project whose lock `xmake test` holds (xmake 3.1.1
+  `actions/test/main.lua:581-631`): the case measured above with `xmake f` in `after_build`.
+  `xmake emulate` inside `on_test` was not run (skill `xmake-tests`). Never `xmake emulate` or `xmake device` from any hook: run them yourself, one
   command at a time (skills `emulate`, `device`).
 - A check script (Charon's `check` rule) runs outside any build and may call xmake, task first.
 
