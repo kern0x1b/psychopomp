@@ -75,7 +75,7 @@ line is followed by `imports: every non-weak import ... resolves`.
 The skill `emulate` covers the emulator itself (setup, devices, releases, limits). For a probe:
 
 ```
-xmake emulate -d <device> -r <release> install -y
+xmake emulate -y -d <device> -r <release> install
 xmake emulate -d <device> -r <release> run /usr/libexec/<probe> [arguments] > .logs/probe-<release>.log 2>&1
 xmake emulate -d <device> -r <release> log FAIL
 ```
@@ -135,9 +135,9 @@ sources for the part under test. It builds its screens, drives them through the 
 reports like a probe.
 
 - **Its report is a file, not `NSLog`.** The user starts the stand by tapping its icon. Its `NSLog`
-  lines go to the device's system log, which is read only over USB while it streams
-  (`xmake device log`), mixes every app's traffic, and keeps nothing for later; a file is the
-  stand's alone, stays until you read it, and is read over SSH as well. At start, reopen
+  lines do reach the device's system log (measured on iPhone 4S 6.1.3), but that log is read over
+  USB, only while it streams, and among every other app's lines; a file holds the stand's lines
+  alone, in order, and is read over SSH whenever you look. At start, reopen
   standard output onto a file the `mobile` user can write — `freopen(path, "w", stdout)` then
   `setvbuf(stdout, NULL, _IOLBF, 0)` — and print with `printf` + `fflush` as a probe does.
 - **The file is written by `mobile`.** An app runs as `mobile`, SSH as `root`; a directory made over
@@ -145,7 +145,7 @@ reports like a probe.
   as mobile and check it (skill `device`, "root and mobile").
 - **It ends itself.** After the last check it prints `checks=<N> failures=<M>` and a line `done`; the
   file without `done` means it stopped early (read the crash report, skill `device`).
-- It runs on the user's device: `xmake device install -y`, the user taps the stand's icon, then
+- It runs on the user's device: `xmake device -y install`, the user taps the stand's icon, then
   `xmake device run "cat <path>" > .logs/stand-<release>.log`. The negative control is the same as a
   probe's: one run with one expectation made wrong, seen as `FAIL`.
 

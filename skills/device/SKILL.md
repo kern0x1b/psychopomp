@@ -79,7 +79,7 @@ The model must be the one `PROJECT.md` names. The release is in `xmake device li
 From the project directory:
 
 ```
-xmake device install -y
+xmake device -y install
 ```
 
 It builds, writes every package the project declares (the app's, its dependencies — the
@@ -125,10 +125,10 @@ a launch: the app does not get the screen.
 
 ## 5. What the app says
 
-- The app's own log is a file it writes with `printf` + `fflush` (the skill `checks` says how and why
-  `NSLog` is not enough). Read it with `xmake device run "cat <path>"` and keep the output under
+- The app's own log is a file it writes with `printf` + `fflush` (the skill `checks` says how, and why a
+  file rather than `NSLog`). Read it with `xmake device run "cat <path>"` and keep the output under
   `.logs/` in the project.
-- `xmake device log -s 30 <TEXT>` streams the device's system log over USB for 30 seconds (it needs
+- `xmake device -s 30 log <TEXT>` streams the device's system log over USB for 30 seconds (it needs
   `idevicesyslog`, from `libimobiledevice`), filtered to lines holding `TEXT`. Always give `TEXT` —
   the app's executable name: the unfiltered log carries other apps' traffic.
 - `xmake device run "<command>"` fails with the remote command's exit status, which `ssh` passes
@@ -153,7 +153,7 @@ For a crash you can reproduce in a probe, the emulator's debugger names the fram
 
 ```
 xmake device uninstall <package>                 # dpkg -r, then the shared runtime packages nothing needs any more
-xmake device uninstall --keep <package>          # dpkg -r of the named packages only
+xmake device --keep uninstall <package>          # dpkg -r of the named packages only
 ```
 
 It never removes `org.charon.apple-backports`: other programs built with Charon use it.
@@ -195,13 +195,19 @@ read or the user's own words on what they saw. Then, if the app is also publishe
 - `device.env` committed → it holds the root password; `.gitignore` it before it exists.
 - Expecting `xmake device` to launch, tap or take a shot → it cannot; the user taps, and you read the
   app's log file.
-- `NSLog` as the app's report → it reaches only the streamed system log, over USB, among every
-  other app's lines; read the app's own `printf` file instead.
+- `NSLog` as the app's report → after a tap it does reach the system log (measured on iPhone 4S
+  6.1.3), but only the streamed log, over USB, among every other app's lines; read the app's own
+  `printf` file instead, and filter `xmake device -s 30 log <TEXT>` by the app's name when you
+  need the log.
 - An app that dies at launch with no crash report → run the executable as mobile once (step 4);
   dyld's message goes to stderr only.
 - A directory created over SSH for the app → root owns it; create it as mobile and check with `touch`.
 - Wi-Fi on a network the user does not control → `xmake device` does not verify the device's host key;
   use USB there.
+- An option after the action (`xmake device uninstall --keep <package>`, `xmake device log -s 30 <TEXT>`)
+  → put every option before the action. Reason: xmake hands what follows the action to it as its
+  arguments, so `--keep` reaches `dpkg -r` and fails there, and `-s 30 <TEXT>` as a whole becomes
+  the text the log filters on, which no line holds.
 - `-s` with `run` → it bounds `log` only; a `run` command that never ends blocks: end it yourself
   (`xmake device run "<command> & sleep N; kill \$!"`: the `\` keeps the Mac's shell from
   expanding `$!` before the command reaches the device).
