@@ -32,8 +32,10 @@ launch an app the way a user's tap does; what it can prove about an app is narro
 - `-r RELEASE` picks the device's **earliest firmware not older than** that release: `-r 6.1` on
   an iPhone 4S emulates 6.1 (10B142), not 6.1.3. Pass the exact release from `PROJECT.md`; the
   line the run prints names the version and build actually emulated, record that one.
-- Audio may not work in the emulator: an audio failure there is unchecked, not the app's fault.
-  No network unless asked (§3), no camera, no GPS, no cellular. The display is drawn in software.
+- No audio for a program `run` starts: `AudioSessionInitialize` answers `'ini?'` and the log says
+  `Couldn't connect to com.apple.audio.AudioSession` (measured on iPhone 4S 6.1.3), because the
+  audio server is not running yet (§4). Audio is unchecked here, not the app's fault. No network
+  unless asked (§3), no camera, no GPS, no cellular. The display is drawn in software.
 
 ## 2. Add the emulator to the project
 
@@ -87,8 +89,10 @@ xmake emulate -d iPhone4,1 -r 6.1.3 [-s 60] run /absolute/path/in/the/guest [ARG
 
 A fresh clone of the installed image boots; launchd starts `charon-runner` (from
 `/etc/launchd.conf` up to iOS 6.x, from a LaunchDaemon from iOS 7), which starts
-the command **as root** with a deadline of `-s` seconds (default 60) once launchd loads daemons,
-and writes the command's exit status and output into the guest. The boot is stopped as soon as the
+the command **as root** with a deadline of `-s` seconds (default 60). Up to iOS 6.x it starts
+early in the boot: when it runs, the guest holds only launchd, launchctl, the runner and the
+command (measured on iPhone 4S 6.1.3), so an API that needs a system daemon (the audio server
+among them) finds none. The runner writes the command's exit status and output into the guest. The boot is stopped as soon as the
 verdict exists, and killed after `-t` seconds (default 900) whatever happens. Expect several host
 minutes per run.
 
@@ -173,7 +177,7 @@ version, build and scale) and the path of the copied `verdict.json`/frame. Then 
 - Reading `fail(spawn error 2)` as an app bug → the path is not in the image; `install` first, and
   pass the guest path of a probe (`/usr/libexec/<name>`), not a host path. Never the app's own
   executable: started by the runner it never becomes an application (§5).
-- `kAudioSession…NotInitialized`, silent sounds → audio may not work in the emulator; record it as
+- `kAudioSession…` errors, silent sounds → no audio server runs for `run` (§1); record audio as
   unchecked, not as the app's fault.
 - A run with `--scale 1` "to be realistic" → the guest's watchdogs expire (SpringBoard is lost to
   a mediaserverd timeout); keep 10 unless the target is `emulate.timing` strict.
@@ -183,9 +187,10 @@ version, build and scale) and the path of the copied `verdict.json`/frame. Then 
 - Two commands on the same project, device and release at once → the second waits for the first
   (per-image lock); several projects may emulate at once, each boot takes one of the machine's
   slots (`min(cores/3, RAM/5 GB)`) and waits for a free one.
-- Results written only with `NSLog` → they go to the guest's system log, not to what `run`
-  prints; write them with `printf` and `fflush(stdout)` (the runner captures standard output and
-  error into `results/test.stdout` and `test.stderr`).
+- Results written with `NSLog` → they do reach what `run` prints, through standard error
+  (`results/test.stderr`, found by `log`; measured on iPhone 4S 6.1.3), but after the standard
+  output and with a timestamp prefix; write the `ok`/`FAIL` lines with `printf` and
+  `fflush(stdout)` so they stay in order and survive a crash.
 - Launching the app some other way (a hand-written LaunchDaemon for it, a launcher copied into the
   image, an edited image) → not a check of the app as a user starts it, and not a native path; the
   launch through SpringBoard is a limit of the emulator today (§5). Say so.

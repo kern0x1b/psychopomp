@@ -152,8 +152,11 @@ and the build log with no weak-import or selector warning left.
 
 - Trusting the SDK header ("it compiles, so iOS 6 has it") → the header is iOS 16's; only the
   import check against the release's own libraries says what exists.
-- `alias = "backports"` or no alias → Charon looks the package up as `apple-backports`
-  (`target:pkg`), so the app's `.deb` gets no backports package and no `Depends` on it.
+- `alias = "backports"` or any other alias → the libraries still link, but Charon finds the package
+  only as `apple-backports` and no longer counts them as provided: the build turns green with
+  `weakly imports N symbols … : _OBJC_CLASS_$_UIStackView …` and the selector warning after
+  `build ok`, and `xmake deb` refuses with `these imports are not exported by the device's iOS:`
+  and writes no package. The alias is exactly `apple-backports`.
 - A config left out → the build still succeeds (weak import, selectors); only a warning says so,
   and only the class half is refused by `xmake deb`. Read the `-v` log.
 - `charon.waive.weak-imports` to get `xmake deb` through → the class is NULL on the device and the

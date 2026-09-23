@@ -63,7 +63,8 @@ The program:
 - A last line `checks=<N> failures=<M>`, and `return failures` from `main`.
 - A crash is a result too: install an uncaught-exception handler
   (`NSSetUncaughtExceptionHandler`) that prints `FAIL uncaught <name>: <reason>` and flushes.
-- Where the environment may not answer (audio, location or motion in the emulator),
+- Where the environment does not answer (in the emulator a probe starts before the system daemons,
+  so audio has no server; location and motion are not checked there either),
   print `skip <name>: <reason>` instead of a verdict — never an `ok`.
 
 How to know it worked: `xmake -y -v > .logs/build.log 2>&1` has `build ok`, and the probe's link
@@ -177,8 +178,8 @@ does not boot) is written down as unchecked, with the reason.
 - A check with no negative control → it may be unable to fail; flip one expectation once.
 - An expectation taken from the code's own first output → the check agrees with the bug; take it
   from documentation, a newer system or the real server.
-- `skip` counted as `ok` → where the emulator does not answer (audio, location, motion), the check
-  is unchecked there; it needs the device.
+- `skip` counted as `ok` → where the emulator does not answer (audio has no server there; location
+  and motion are unchecked), the check needs the device.
 - A UIKit check in the emulator → the app never reaches `didFinishLaunching` there with Charon
   0.8.10; run it as a test stand on the device, or record it as unchecked.
 - `xmake check` taken for this → it runs the host-side scripts a project declares with Charon's
