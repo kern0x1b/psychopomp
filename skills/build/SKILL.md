@@ -72,8 +72,9 @@ backport that carries it (skill `backports`). Never raise `apple_minimum` withou
 never silence availability warnings, never `-disable-availability-checking`.
 
 `(loads <library>, which neither the device nor this build provides)` names a whole library the
-release lacks, typically a backport not carried into the app: the skill `backports`
-(`charon.libraries`).
+release lacks and nothing in this build supplies: a shared-library target of the project not
+bundled with `app.frameworks` (skill `project`), or the backports required under another alias
+than `apple-backports` (skill `backports`).
 
 ### A weak import (warning now, refusal when packaged)
 
