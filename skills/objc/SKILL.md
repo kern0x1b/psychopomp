@@ -108,12 +108,30 @@ Two readings of the file need care:
 The file holds Objective-C classes only. C functions and constants (GCD, CoreGraphics, …) are
 checked by the import check of every build (skill `build`).
 
+Charon's `charon@apple-compat` carries shims for C calls of the system library that a later
+release added or changed: `arc4random_buf` (4.3), `openat`, `fchmodat`, `unlinkat`, `fdopendir`
+(8.0), `clock_gettime`, `clock_getres` (10.0), `aligned_alloc` (13.0), and
+`dispatch_get_global_queue` given a class of service (8.0) — one header each under
+`include/charon/` of the package at the pinned repository tag. A target names the calls it takes,
+and the shim replaces that call in every file of the target:
+
+```lua
+add_requires("charon@apple-compat", {alias = "apple-compat"})
+-- in the target:
+add_packages("apple-compat")
+add_values("apple.compat", "dispatch_get_global_queue", "clock_gettime")
+```
+
+How to know it worked: in the `-v` build log each compile line carries
+`-include <…>/include/charon/<call>.h` for every call named.
+
 ## 4. Calling what the lowest release lacks
 
 For each API newer than `apple_minimum`, choose in this order, and record the choice in `PROJECT.md`:
 
 1. **A backport**, if `charon@apple-backports` implements it: the app calls the modern API and the
-   backport supplies it on the old release (skill `backports`).
+   backport supplies it on the old release (skill `backports`). For a C call of the system library,
+   `charon@apple-compat` carries shims (§3).
 2. **The release's own older API**: `UIAlertView` for `UIAlertController`, `NSURLConnection` for
    `NSURLSession`, frames and `autoresizingMask` for Auto Layout below 6.0.
 3. **A guard, and the newer API only where it exists:**
@@ -123,9 +141,10 @@ For each API newer than `apple_minimum`, choose in this order, and record the ch
      object you will send it to;
    - `if (@available(iOS 7.0, *))` compiles, but it links a weak import of
      `__availability_version_check` besides the class it guards, and `xmake deb` refuses both
-     unless the target waives the check (below). That symbol is guarded by the compiler's own
-     runtime, which tests it for `NULL` and otherwise reads the release's `SystemVersion.plist`;
-     the class inside the block is guarded by your `@available`;
+     unless the target waives the check (below). The compiler's own runtime tests that symbol for
+     `NULL` before calling it (compiler-rt, `os_version_check.c`), and on iOS 6.1.3 in the
+     emulator `@available(iOS 7.0, *)` answered NO and `@available(iOS 6.1, *)` YES. The class
+     inside the block is guarded by your `@available`;
    - a C function or constant of a later release is weakly imported: compare it with `NULL`
      before use.
 
@@ -137,6 +156,12 @@ value says why:
 ```lua
 set_values("charon.waive.weak-imports", "NSURLSession is reached only inside @available(iOS 7.0, *)")
 ```
+
+The waiver covers the whole target, including weak imports added after it was written: from
+then on `xmake deb -y -v` prints `<binary>: weak-imports not checked: <the reason>` and the
+`weakly imports` warning with every symbol, and packages. A new symbol is never refused again. On
+every build, read that warning's symbols against the guards; when a new one appears, guard it,
+then update the reason and `## Limits` and ask the user again.
 
 The selector check works by name: it warns about a selector that **no** class of the release
 implements. A selector some other class has passes: `setTintColor:` passes at 6.0 because
@@ -186,8 +211,13 @@ controls, drawn by its own UIKit, not from imitating them:
 - `respondsToSelector:` asked of the wrong object (the class instead of the instance, a bar instead
   of the view) → it answers for that object only.
 - `dispatch_get_global_queue(QOS_CLASS_…, 0)` → a class of service is iOS 8; iOS 6 answers `NULL`.
-  Pass `DISPATCH_QUEUE_PRIORITY_DEFAULT` (or `_HIGH`, `_LOW`,
-  `_BACKGROUND`).
+  Take `charon@apple-compat` with `add_values("apple.compat", "dispatch_get_global_queue")` (§3):
+  it maps each class to the priority `queue.h` gives for it (on iOS 6.1.3 in the emulator,
+  `QOS_CLASS_USER_INITIATED` then gave the `_HIGH` queue). Otherwise pass the release's own
+  `DISPATCH_QUEUE_PRIORITY_DEFAULT` (or `_HIGH`, `_LOW`, `_BACKGROUND`).
+- `add_requires("charon@apple-compat")` without `alias = "apple-compat"` → `xmake f` stops with
+  `target(<Name>) names apple.compat symbols without add_packages("apple-compat")`: the project
+  knows the package only by its alias.
 - `dispatch_sync` to the main queue from the main thread → deadlock, on every release ("Calls to
   dispatch_sync() targeting the current queue will result in dead-lock", the SDK's `queue.h`).
   Wait off the main thread, with a semaphore rather than a run-loop spin.

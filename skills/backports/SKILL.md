@@ -12,6 +12,8 @@ added after `apple_minimum`, there are three native answers, per API:
 
 1. **A backport** — `charon@apple-backports` implements it for the older release, in libraries
    installed on the device by their own package. The app calls the API as if the release had it.
+   A C call of the system library (`clock_gettime`, `dispatch_get_global_queue` with a class of
+   service, …) comes instead from `charon@apple-compat`, linked into the app (skill `objc`).
 2. **The release's own API** — the older way to do the same thing (for example `UIAlertView`
    instead of `UIAlertController` when the backport's behaviour is not what the app needs).
 3. **A version check** — `respondsToSelector:`, `[Class class] != nil` in Objective-C,

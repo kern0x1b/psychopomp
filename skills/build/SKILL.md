@@ -94,8 +94,11 @@ function pointer test, `#available` in Swift). `xmake deb` refuses the image unl
 says why every call is guarded: `set_values("charon.waive.weak-imports", "<the reason>")`. Write
 that waiver only when every use of every symbol it covers is behind such a check, the user agreed,
 and it is written under `## Limits` in `PROJECT.md` (skill `self-review`) — it records a guard the
-static check cannot see; it is never a way to turn a refusal green. To see the packaging verdict without
-packaging, build as a release:
+static check cannot see; it is never a way to turn a refusal green. It covers the whole target: a
+weak import added later is never refused, so read this warning's symbols on every build and ask the
+user again for a new one (skill `objc`). A C call of the system library may instead come from
+`charon@apple-compat` (skill `objc`). To see the packaging verdict without packaging, build as a
+release:
 
 ```
 CHARON_RELEASE=1 xmake -r -y -v > .logs/build-release.log 2>&1
