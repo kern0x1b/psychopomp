@@ -76,8 +76,8 @@ The skill `emulate` covers the emulator itself (setup, devices, releases, limits
 
 ```
 xmake emulate -y -d <device> -r <release> install
-xmake emulate -d <device> -r <release> run /usr/libexec/<probe> [arguments] > .logs/probe-<release>.log 2>&1
-xmake emulate -d <device> -r <release> log FAIL
+xmake emulate -y -d <device> -r <release> run /usr/libexec/<probe> [arguments] > .logs/probe-<release>.log 2>&1
+xmake emulate -y -d <device> -r <release> log FAIL
 ```
 
 `install` writes every package of the project (the app's, its dependencies', each probe's) and
@@ -89,7 +89,7 @@ prints its output, then the verdict. The exit status is the verdict:
 | `pass` | exited 0: no failure |
 | `fail(exit N)` | N checks failed; the `FAIL` lines say which |
 | `fail(spawn error 2)` | the probe is not in the image: `install` first |
-| `crash(signal N, pc ...)` | read the frames with `xmake emulate -d <device> -r <release> debug /usr/libexec/<probe>` (it takes the path only, no arguments) |
+| `crash(signal N, pc ...)` | read the frames with `xmake emulate -y -d <device> -r <release> debug /usr/libexec/<probe>` (it takes the path only, no arguments) |
 | `timeout` | it waited past `-s`: a deadlock or a wait with no timeout (step 5) |
 | `boot-blocked(...)` | the emulated system never reached the probe; not the probe's fault |
 
@@ -102,7 +102,7 @@ wrong on purpose — an argument such as `--negative` that flips a single expect
 fail:
 
 ```
-xmake emulate -d <device> -r <release> run /usr/libexec/<probe> --negative > .logs/probe-<release>-negative.log 2>&1
+xmake emulate -y -d <device> -r <release> run /usr/libexec/<probe> --negative > .logs/probe-<release>-negative.log 2>&1
 ```
 
 It must print `FAIL <that name>: ...`, end with `checks=<N> failures=1`, and the verdict must be

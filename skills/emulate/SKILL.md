@@ -61,7 +61,7 @@ Always name the device and the release; the defaults (`-r` = `apple_minimum`, `-
 device of the configured architecture) rarely match `PROJECT.md`.
 
 ```
-xmake emulate -d iPhone4,1 -r 6.1.3 install > .logs/emulate-install-iPhone4,1-6.1.3.log 2>&1
+xmake emulate -y -d iPhone4,1 -r 6.1.3 install > .logs/emulate-install-iPhone4,1-6.1.3.log 2>&1
 ```
 
 `install` runs `xmake deb` first (the whole packaging of skill `package`: build, stage, sign,
@@ -84,7 +84,7 @@ sockets.
 ## 4. Run a program and read the verdict
 
 ```
-xmake emulate -d iPhone4,1 -r 6.1.3 [-s 60] run /absolute/path/in/the/guest [ARGS...] > .logs/emulate-run.log 2>&1
+xmake emulate -y -d iPhone4,1 -r 6.1.3 [-s 60] run /absolute/path/in/the/guest [ARGS...] > .logs/emulate-run.log 2>&1
 ```
 
 A fresh clone of the installed image boots; launchd starts `charon-runner` (from
@@ -114,11 +114,11 @@ with `error: <verdict> on <device> <version> (<build>) in …; the emulator log 
 `results/reports/` (the guest's crash reports), `emulator.log` and `frame.png`. It is replaced by
 the next run of the same device and release: copy what you cite into the project's `.logs/`.
 
-- `xmake emulate -d … -r … log [TEXT]` — the last run's output lines, and the emulator's fatal
+- `xmake emulate -y -d … -r … log [TEXT]` — the last run's output lines, and the emulator's fatal
   CPU faults and signal exits (or every line holding TEXT).
-- `xmake emulate -d … -r … shot [FILE]` — copies the last frame (default
+- `xmake emulate -y -d … -r … shot [FILE]` — copies the last frame (default
   `build/<device>_<build>.png`). Look at it; do not describe a frame you have not opened.
-- `xmake emulate -d … -r … debug /path` — starts the program as the guest's **first process**
+- `xmake emulate -y -d … -r … debug /path` — starts the program as the guest's **first process**
   (nothing else boots), stops where it crashes and prints the signal, the frames named by the
   images loaded and the registers; the report is `debug/debug.json` beside `run/`. Use it on a
   `crash(...)` of a program that does not need the rest of the system.
