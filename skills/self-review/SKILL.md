@@ -31,13 +31,15 @@ way to make it look done?*
 | `return nil` / `NO` / `0` / empty, an empty method body | it replaces behaviour the app was asked to have | it is the real answer for that case |
 | `TODO`, `FIXME`, `XXX`, `HACK`, "not implemented" | always, in anything handed over | — |
 | A branch on one device model, one release, one test input | it makes one case pass instead of the general one working | the behaviour really differs there, and `respondsToSelector:`, `#available` or the release's own API decides it |
-| Private classes, selectors, ivars by name, swizzling | a public API or a Charon backport does the job | no public way exists on that release, you checked the release's own library, and the user was told |
+| Private classes, selectors, ivars by name, swizzling | a public API or a Charon backport does the job | no public way exists on that release, you checked the release's own library, the user agreed, and it is under `## Limits` |
 | `-Xfrontend -disable-availability-checking` | always: it makes every `#available` true, so the check is taken on a release that lacks the API | — (guard with `#available`, or use a backport) |
-| `charon.waive.<check>` | it was added to turn a refused build green | every guarded call really is guarded, the reason is written in the value, and the user agreed |
-| `-fobjc-arc` missing on the link, `-w`, a warning turned off | it hides what the build is telling you | — |
+| `charon.waive.weak-imports` | it was added to get `xmake deb` through | every use of each symbol it covers sits behind a check for it (`respondsToSelector:`, a class or function-pointer test, `#available`), the value says so, the user agreed, and it is under `## Limits`. The symbols the compiler emits itself (the ARC entry points, the block runtime) are refused whatever the waiver says: fix the link or add the package that carries them |
+| Any other `charon.waive.<check>` (`pagezero`, `input-minimum.<package>`, …) | it was added to turn a refused build green | the check does not apply to this target, shown by a measurement and not assumed, the value says why, the user agreed, and it is under `## Limits` |
+| `-fobjc-arc` on the compile but not on the link | always. Nothing hides it: below iOS 5.0 Charon refuses the build and names the ARC entry points the link did not carry (`should carry it from arclite`); from 6.0 the build is green without the flag, so it is lost unnoticed until `apple_minimum` moves down | both `add_mflags` and `add_ldflags` (skill `project`) |
+| `-w`, a warning turned off | it hides what the build is telling you | — |
 | `|| true`, `2>/dev/null` on a step whose failure matters, an empty `@catch`, an ignored `NSError` | always | — |
 | A file copied into the project in place of what a build step produces (a prebuilt binary, a plist from elsewhere, a library from another project) | always | the build produces it |
-| Code, text or files taken from these skills or from another app | always: the project is written for this app | — |
+| A file, a sample or fragments strung together taken from these skills, or code taken from another app | always: the project is written for this app | — (the single line a skill gives for one step, an `xmake.lua` line, a flag or a call, is meant to be used) |
 | Progress evidence | the log, verdict or `.deb` was not produced by a command you ran in this step | you ran it and the recorded line is in its output |
 | Anything of Apple's in the project (firmware, dyld cache, SDK header, framework, artwork) | always | — |
 

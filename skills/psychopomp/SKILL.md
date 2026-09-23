@@ -15,15 +15,15 @@ first step without evidence.
 | 2. Host | `install` | the tools and the Charon addon answer their checks |
 | 3. Apple's files | `firmware` | the release's libraries and, for the emulator, its root filesystem on the user's machine |
 | 4. Project | `project` | `xmake.lua`, `Info.plist`, resources, configured for the chosen release and architectures |
-| 5. Code | `objc` or `swift` (+ `swiftui`, `combine`, `backports`) | the app's sources, written for the chosen releases |
+| 5. Code | `backports` for API newer than the release | the app's sources, written for the chosen releases |
 | 6. Build | `build` | a green build log, imports checked against the release |
 | 7. Check | `emulate`, `checks` | the verdict and the evidence from the emulator on the chosen device and release |
 | 8. Package | `package` | a `.deb` and its dependencies, inspected |
 | 9. Deliver | `device` and/or `cydia-repo` | installed on the user's device, or published in their repository |
 
-When a step needs to understand or change the build itself, the `xmake-*` skills are the reference:
-`xmake-basics`, `xmake-packages`, `xmake-objc`, `xmake-swift`, `xmake-rules`, `xmake-toolchains`,
-`xmake-scripting`, `xmake-tests`, `xmake-troubleshooting`.
+Skills for writing the code in Objective-C or Swift, and a reference for xmake itself, are not in
+this plugin yet. Until they are, write the code from the platform's documentation for the chosen
+release, and let the build's import check (skill `build`) say what the release has.
 
 ## Rules for every step
 
@@ -58,4 +58,4 @@ When a step needs to understand or change the build itself, the `xmake-*` skills
 
 - An app for a current iOS release, the simulator or the App Store: this route does not apply; say so.
 - A tweak or a daemon instead of an app: the same route, with Charon's `tweak` or `daemon` rule in
-  place of `app` (skill `xmake-rules`); the interview still comes first.
+  place of `app` (Charon's README describes both); the interview still comes first.

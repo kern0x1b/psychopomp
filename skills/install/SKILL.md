@@ -109,8 +109,8 @@ test -f <installdir>/manifest.txt && echo built || echo not-built
 - `built`: the compiler is there; the first configure finishes in seconds.
 - `not-built`: the first configure compiles it from source (step 6). `--info` may leave an empty
   folder at that path; an install counts only with its `manifest.txt`.
-- Repeat with `/l/ld64/` and `/i/iphoneos-sdk/` for the whole picture. For a Swift app, the skill
-  `swift` adds `swift-runtime` and the Swift compiler; check them the same way once it has.
+- Repeat with `/l/ld64/` and `/i/iphoneos-sdk/` for the whole picture. For a Swift app, check
+  `/s/swift-runtime/` and `/s/swift/` the same way once the project requires them.
 
 ## 6. Configure once, and pay the first-build cost
 

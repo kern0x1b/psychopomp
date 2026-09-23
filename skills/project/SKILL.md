@@ -58,17 +58,16 @@ Write these lines yourself, one decision each:
   (`add_mxflags` too for `.mm`). The link flag makes clang force-load Charon's arclite, which
   carries what older releases lack (the ARC entry points below 5.0, collection subscripting
   below 6.0). An iOS 6.0 app links green without it, which is why it is easy to lose; a lower
-  release then refuses the build or the app dies at launch. Keep both from the start. The skill
-  `objc` covers ARC below iOS 5;
+  release then refuses the build or the app dies at launch. Keep both from the start;
 - the property list: `set_values("app.plist-file", "Info.plist")`;
 - the resources: `set_values("app.resources", "resources")`. Each named folder's contents are
   copied flat into the bundle; a named file is copied as is;
 - optional: `add_values("app.plist", "KEY=VALUE")` overrides one string key over the file;
   `set_values("app.url-scheme", "<scheme>")` registers a URL scheme; `app.frameworks` bundles a
-  package's shared libraries (skill `swift`, `backports`).
+  shared-library target of the project into `Frameworks/`.
 
-A Swift target adds the `swift` rule and packages (skill `swift`); the package control file and
-maintainer are the skill `package`'s.
+A Swift target adds Charon's `swift` rule and the Swift runtime packages; the package control file
+and maintainer are the skill `package`'s.
 
 ## 4. Info.plist
 
@@ -144,7 +143,7 @@ loads for a build), and what they mean:
 In `PROJECT.md` under `## Progress`, the project line: the target name, release and
 architectures, `plutil -lint` OK, the `xmake show` check, `.logs/configure.log`.
 
-Then write the code (skill `objc` or `swift`), and build with the skill `build`.
+Then write the code, and build with the skill `build`.
 
 ## Traps
 

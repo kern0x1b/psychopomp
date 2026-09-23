@@ -18,7 +18,7 @@ you look facts up yourself, and you stop only when every branch is settled and t
   An answer settles its node; an answer that breaks a constraint in §3 does not, and becomes a question.
 - Facts are yours to find, never the user's to supply: the host (`uname -sm`, `sw_vers`), whether
   `xcode-select -p`, `brew`, `xmake` exist, free disk (`df -h ~`), what the stack supports today (the
-  tables in §3 and the skills `emulate`, `swiftui`, `backports`). Ask the user only for decisions.
+  tables in §3 and the skills `emulate` and `backports`). Ask the user only for decisions.
 
 ## 2. Rounds
 
@@ -48,8 +48,8 @@ something the stack cannot do, say what fails and where, and ask again.
    smallest first version that is still the app they asked for.
 2. **Lowest iOS release** [1] — becomes `apple_minimum`. Constraints: Swift needs 6.0 or later;
    arm64 needs 7.0; armv7s needs 6.0; armv6 exists only up to 4.2.1; `weak` references need 5.0 (ARC
-   below that is the skill `objc`'s question). Each device has a highest release it can run: check the
-   pair against the devices in node 4.
+   below that needs the link flag the skill `project` gives). Each device has a highest release it
+   can run: check the pair against the devices in node 4.
 3. **Releases to check** [2] — which releases the app is verified on. The emulator boots only some:
    iOS 3.0 to 6.1.3 on the devices it has profiles for; iOS 7 is declared but has never been booted;
    iOS 8 and 9 cannot be emulated. A release outside that range is verified on a real device or not
@@ -65,7 +65,7 @@ something the stack cannot do, say what fails and where, and ask again.
    and for anything that must also build for arm64 (Swift on this stack is verified on armv7 only).
 7. **Interface** [6] — UIKit in code, or SwiftUI (Swift only). There are no nibs or storyboards: the
    interface is built in code. Before recommending SwiftUI, check whether the pinned Charon provides
-   Eidolon (the skill `swiftui` says how); if it does not, say so and recommend UIKit.
+   Eidolon as a package (`charon@eidolon`); if it does not, say so and recommend UIKit.
 8. **Combine** [6] — only with Swift; recommend it only when the app's data flow needs it.
 9. **Frameworks and APIs** [1, 2] — list what the purpose needs (for example networking, storage,
    location, camera, maps). For each API introduced after the lowest release, look up whether the
