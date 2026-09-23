@@ -23,6 +23,9 @@ add_mflags("-fobjc-arc")
 add_ldflags("-fobjc-arc")
 ```
 
+A tweak or a `library` target is linked as a shared library, whose link reads `add_shflags`, not
+`add_ldflags`: give it `add_shflags("-fobjc-arc")` (skill `xmake-objc`).
+
 The link flag is what makes clang force-load arclite into the image. Charon's arclite carries the
 ARC entry points (`objc_retain`, `objc_storeWeak`, …) below iOS 5, where the system has none, and
 the collection subscripting methods (`objectAtIndexedSubscript:`, `objectForKeyedSubscript:`, …)
@@ -123,7 +126,7 @@ add_values("apple.compat", "dispatch_get_global_queue", "clock_gettime")
 ```
 
 How to know it worked: in the `-v` build log each compile line carries
-`-include <…>/include/charon/<call>.h` for every call named.
+`-include<…>/include/charon/<call>.h` (no space after `-include`) for every call named.
 
 ## 4. Calling what the lowest release lacks
 

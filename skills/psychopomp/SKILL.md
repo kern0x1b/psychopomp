@@ -21,9 +21,13 @@ first step without evidence.
 | 8. Package | `package` | a `.deb` and its dependencies, inspected |
 | 9. Deliver | `device` and/or `cydia-repo` | installed on the user's device, or published in their repository |
 
-A skill for writing the code in Swift, and a reference for xmake itself, are not in this plugin
-yet. Until they are, write Swift from the platform's documentation for the chosen release, and let
-the build's import check (skill `build`) say what the release has.
+When a step needs to understand or change the build itself, the `xmake-*` skills are the reference:
+`xmake-basics`, `xmake-packages`, `xmake-objc`, `xmake-swift`, `xmake-rules`, `xmake-toolchains`,
+`xmake-scripting`, `xmake-tests`, `xmake-troubleshooting`.
+
+A skill for writing the code in Swift is not in this plugin yet. Until it is, write Swift from the
+platform's documentation for the chosen release, and let the build's import check (skill `build`)
+say what the release has.
 
 ## Rules for every step
 
@@ -58,4 +62,4 @@ the build's import check (skill `build`) say what the release has.
 
 - An app for a current iOS release, the simulator or the App Store: this route does not apply; say so.
 - A tweak or a daemon instead of an app: the same route, with Charon's `tweak` or `daemon` rule in
-  place of `app` (Charon's README describes both); the interview still comes first.
+  place of `app` (skill `xmake-rules`); the interview still comes first.

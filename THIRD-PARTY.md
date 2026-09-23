@@ -7,15 +7,14 @@ under their licenses as well; the full texts are in `LICENSES/`.
 
 - Source: <https://github.com/xmake-io/xmake-skills>, commit `ef67caa`.
 - License: Apache License 2.0 (`LICENSES/Apache-2.0.txt`).
-- Used in: the `xmake-*` skills under `skills/` (not in the tree yet; the table is the plan they
-  follow). Each is rewritten for the Charon toolchain and
-  modified: content that does not apply to apps for old iOS was removed, advice that conflicts with
-  Charon was replaced, and new material was added. Each file says at its top which upstream skills it
+- Used in: the `xmake-*` skills under `skills/`. Each is rewritten for the Charon toolchain and
+  modified: content that does not apply to apps for old iOS is removed, advice that conflicts with
+  Charon is replaced, and new material is added. Each file says at its top which upstream skills it
   derives from.
 
 | Skill here | Upstream skills |
 | --- | --- |
-| `xmake-basics` | `xmake-env-vars`, and material on targets, modes and configuration |
+| `xmake-basics` | `xmake-basics`, `xmake-targets`, `xmake-commands`, `xmake-env-vars` |
 | `xmake-packages` | `xmake-packages`, `xmake-addons` |
 | `xmake-objc` | `xmake-objc` |
 | `xmake-swift` | `xmake-swift` |
@@ -32,4 +31,4 @@ under their licenses as well; the full texts are in `LICENSES/`.
 - License: MIT, Copyright (c) 2026 Matt Pocock (`LICENSES/MIT-mattpocock-skills.txt`).
 - Used in: `skills/init`. Its interview follows their approach: a design tree, rounds that ask
   the whole frontier with a recommended answer each, facts looked up rather than asked, and done
-  only when every branch is settled and the user confirms. The text was written anew for this plugin.
+  only when every branch is settled and the user confirms. The text is our own, written for this plugin.

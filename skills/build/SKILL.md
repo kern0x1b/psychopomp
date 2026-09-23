@@ -142,9 +142,11 @@ was built first.
 
 ### Two xmake processes
 
-`package(<name>) is being accessed by other processes, please wait!`, `the current project is
-being accessed by other processes, please wait!`, or a build making no progress for a long time:
-another `xmake` holds the lock, often one left over from an earlier run in this project.
+A build making no progress for a long time: another `xmake` holds the lock, often one left over
+from an earlier run in this project. A second build of the same project waits for the first
+without a word; `the current project is being accessed by other processes, please wait!` is
+printed only when the waiting command has `-D`. A package install that waits says
+`package(<name>) is being accessed by other processes, please wait!`.
 
 ```
 pgrep -fl xmake
