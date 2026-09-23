@@ -58,7 +58,8 @@ Write these lines yourself, one decision each:
   (`add_mxflags` too for `.mm`). The link flag makes clang force-load Charon's arclite, which
   carries what older releases lack (the ARC entry points below 5.0, collection subscripting
   below 6.0). An iOS 6.0 app links green without it, which is why it is easy to lose; a lower
-  release then refuses the build or the app dies at launch. Keep both from the start;
+  release then refuses the build (below 5.0) or lacks the collection subscripts (5.x). Keep both
+  from the start (the skill `objc` says what each release needs);
 - the property list: `set_values("app.plist-file", "Info.plist")`;
 - the resources: `set_values("app.resources", "resources")`. Each named folder's contents are
   copied flat into the bundle; a named file is copied as is;
@@ -145,7 +146,7 @@ loads for a build), and what they mean:
 In `PROJECT.md` under `## Progress`, the project line: the target name, release and
 architectures, `plutil -lint` OK, the `xmake show` check, `.logs/configure.log`.
 
-Then write the code, and build with the skill `build`.
+Then write the code (skill `objc` for Objective-C), and build with the skill `build`.
 
 ## Traps
 

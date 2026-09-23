@@ -16,8 +16,8 @@ It stands on four open projects:
 - [Shade](https://github.com/kern0x1b/shade): the emulator that boots a real iOS firmware's userland.
 
 > **Status: early.** The route, the interview, the build path from installing the tools to the
-> `.deb`, delivery to a device or a Cydia repository, and self-review are written; skills for
-> Objective-C, Swift, SwiftUI and Combine code and a reference for xmake are not yet. No test run
+> `.deb`, delivery to a device or a Cydia repository, self-review and Objective-C code are
+> written; skills for Swift, SwiftUI and Combine code and a reference for xmake are not yet. No test run
 > has passed yet. Each runtime's install line is marked with whether it has been verified.
 
 ## What you need

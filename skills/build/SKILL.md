@@ -72,7 +72,7 @@ error: these imports are not exported by the device's iOS:
 
 The code calls a symbol the SDK declares but the lowest release does not have, strongly bound:
 the app would fail to load. It is checked against the release named in `apple_minimum`, not the
-SDK. Fix the code, not the check: use the API the release has, or a
+SDK. Fix the code, not the check: use the API the release has (skill `objc`), or a
 backport that carries it (skill `backports`). Never raise `apple_minimum` without the user's say,
 never silence availability warnings, never `-disable-availability-checking`.
 
