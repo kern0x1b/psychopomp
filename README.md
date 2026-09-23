@@ -37,7 +37,7 @@ The skills are in `skills/<name>/SKILL.md`, in the [Agent Skills](https://agents
 | Agent | Install | Verified |
 | --- | --- | --- |
 | Claude Code | `claude plugin marketplace add kern0x1b/psychopomp`, then `claude plugin install psychopomp@psychopomp` | not yet |
-| Codex | `codex plugin marketplace add kern0x1b/psychopomp`, then `codex plugin add psychopomp@psychopomp` | not yet |
+| Codex | `codex plugin marketplace add kern0x1b/psychopomp`, then `codex plugin add psychopomp@psychopomp` | per its documentation, not tried |
 | opencode | `npx skills add kern0x1b/psychopomp -a opencode` | not yet |
 | Others | `npx skills add kern0x1b/psychopomp -a <agent>` | not yet |
 
