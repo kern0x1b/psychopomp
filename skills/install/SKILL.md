@@ -28,7 +28,9 @@ df -h ~
 - `uname -sm` must say `Darwin arm64` if the plan includes the emulator: it runs on macOS arm64
   hosts only. Building works on macOS; nothing here runs on Linux or Windows.
 - No `xcode-select -p` path: run `xcode-select --install` and let the user finish the dialog.
-  Xcode itself is not needed; the build calls `xcrun strip`, `git` and `plutil` from these tools.
+  Xcode itself is not needed; the build calls `xcrun swiftc` (every project's first configure
+  compiles Charon's firmware tool with it, even for an Objective-C app), `xcrun strip`, `git` and
+  `plutil` from these tools. Check: `xcrun --find swiftc` prints a path.
 - No `brew`: the user installs Homebrew from https://brew.sh first. Say so and wait.
 
 ## 2. Install the tools
@@ -97,14 +99,15 @@ on the same Charon tag may already have built the compiler; then the first build
 Check before starting it (this also installs the addon, which is quick):
 
 ```
-xmake require -y --info "charon@llvm 23.1.1" 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > .logs/require-info.log
-grep -A20 'require(charon@llvm 23.1.1)' .logs/require-info.log | grep 'installdir:'
+xmake require -y --info 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > .logs/require-info.log
+grep -A20 'require(charon@llvm 23.1.1)' .logs/require-info.log | grep -m1 'installdir:'
 ```
 
-Ask for the package exactly as the pinned addon requires it (`charon@llvm 23.1.1` at Charon 0.8.10,
-in its `includes/apple-ios/xmake.lua`): a bare `llvm` may resolve another package, and the store
-holds several llvm installs. It prints `-> installdir: <home>/.xmake/packages/l/llvm/23.1.1/<hash>`,
-the exact install this pin would use. Test that path:
+With no package named, `--info` describes the project's own requires, as the pinned addon states
+them (`charon@llvm 23.1.1` at Charon 0.8.10); a package named on the command line is resolved
+alone and may differ from the one the project uses, and the store holds several llvm installs.
+It prints `-> installdir: <home>/.xmake/packages/l/llvm/23.1.1/<hash>`, the exact install this pin
+would use. Test that path:
 
 ```
 test -f <installdir>/manifest.txt && echo built || echo not-built
@@ -113,7 +116,7 @@ test -f <installdir>/manifest.txt && echo built || echo not-built
 - `built`: the compiler is there; the first configure finishes in seconds.
 - `not-built`: the first configure compiles it from source (step 6). `--info` may leave an empty
   folder at that path; an install counts only with its `manifest.txt`.
-- The same log shows `require(charon@ld64)` and `require(charon@iphoneos-sdk)` with their own
+- The same log shows `require(charon@ld64)` and `require(charon@iphoneos-sdk 16.4)` with their own
   `installdir:` lines; test them the same way for the whole picture. For a Swift app, check
   `/s/swift-runtime/` and `/s/swift/` the same way once the project requires them.
 

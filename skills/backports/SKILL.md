@@ -37,7 +37,7 @@ Before that, read the same files in the Charon repository at the pinned tag
 clone under `.xmake/<host>/<arch>/repositories/charon/` once `xmake f` has run). Search the API as
 the app writes it: a class `UIStackView`, a method `+[NSLayoutConstraint activateConstraints:]`
 or `-[UIView centerXAnchor]`, a property as `Class.property` (both accessors in one entry, e.g.
-`UIScreen.calibratedLatency`), a function `Name()`, a constant by its symbol. A property may also
+`UIScreen.captured`), a function `Name()`, a constant by its symbol. A property may also
 appear by its getter, `-[Class property]`: search both spellings. `packages/a/apple-backports/README.md` beside it explains, release by release, what
 is carried with a difference and what is refused and why.
 
