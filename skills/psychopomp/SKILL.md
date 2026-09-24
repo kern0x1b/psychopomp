@@ -15,7 +15,7 @@ first step without evidence.
 | 2. Host | `install` | the tools and the Charon addon answer their checks |
 | 3. Apple's files | `firmware` | the release's libraries and, for the emulator, its root filesystem on the user's machine |
 | 4. Project | `project` | `xmake.lua`, `Info.plist`, resources, configured for the chosen release and architectures |
-| 5. Code | `objc`, and `backports` for API newer than the release | the app's sources, written for the chosen releases |
+| 5. Code | `objc` or `swift` (with `combine`, `swiftui`), and `backports` for API newer than the release | the app's sources, written for the chosen releases |
 | 6. Build | `build` | a green build log, imports checked against the release |
 | 7. Check | `emulate`, `checks` | the verdict and the evidence from the emulator on the chosen device and release |
 | 8. Package | `package` | a `.deb` and its dependencies, inspected |
@@ -24,10 +24,6 @@ first step without evidence.
 When a step needs to understand or change the build itself, the `xmake-*` skills are the reference:
 `xmake-basics`, `xmake-packages`, `xmake-objc`, `xmake-swift`, `xmake-rules`, `xmake-toolchains`,
 `xmake-scripting`, `xmake-tests`, `xmake-troubleshooting`.
-
-A skill for writing the code in Swift is not in this plugin yet. Until it is, write Swift from the
-platform's documentation for the chosen release, and let the build's import check (skill `build`)
-say what the release has.
 
 ## Rules for every step
 
@@ -44,8 +40,8 @@ say what the release has.
 - **Evidence, not belief.** A step is done when its check has run and its output says so. Record
   the command and the line that proves it in `## Progress`. A build that "should" pass has not
   passed; an emulator run that did not happen is not described.
-- **Say what the stack cannot do.** If Charon, the emulator, the backports or Eidolon lack something
-  the app needs, stop at that point and tell the user what is missing and where. Do not fake an API,
+- **Say what the stack cannot do.** If Charon, the emulator, the backports or Eidolon (skill
+  `swiftui`) lack something the app needs, stop at that point and tell the user what is missing and where. Do not fake an API,
   stub a check, or switch the target release or device without asking.
 - **Long commands are normal.** The first build compiles the toolchain's compiler and, for Swift, the
   Swift compiler from source: it can take hours. Run it with a long timeout, log to a file in the

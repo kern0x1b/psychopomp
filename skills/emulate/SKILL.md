@@ -69,7 +69,9 @@ imports refused rather than warned), then clones the golden image and unpacks th
 .deb that step wrote** — the app's and, for an app that uses the backports, the
 `org.charon.apple-backports` package — and runs each package's `preinst` and `postinst` against
 the image the way dpkg does (`DPKG_ROOT`). The backports' `postinst` links the libraries built for
-the image's own release and refuses a release outside its bands.
+the image's own release and refuses a release outside its bands. What `xmake deb` refuses is not
+installed: at this pin a Swift program that carries its runtime stops `xmake emulate install` with
+`error: these imports are not exported by the device's iOS:` (measured; skill `swift` §7).
 
 Check: one line `installed <file>.deb into <device> <version>` per package, and no `refused this
 image`. The first `install` on a device and release also boots and builds its golden image; if that

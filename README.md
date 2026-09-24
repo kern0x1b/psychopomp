@@ -12,13 +12,14 @@ It stands on four open projects:
 - [Charon](https://github.com/kern0x1b/charon): the [xmake](https://xmake.io) addon, the toolchain
   (clang, ld64, ldid, no Xcode), the backports of newer iOS APIs, and a Swift runtime for iOS 6;
 - [Styx](https://github.com/kern0x1b/styx): Combine;
-- [Eidolon](https://github.com/kern0x1b/eidolon): SwiftUI on the UIKit of iOS 6;
+- [Eidolon](https://github.com/kern0x1b/eidolon): SwiftUI on the UIKit of iOS 6 (not yet packaged
+  by Charon at the pinned 0.8.10);
 - [Shade](https://github.com/kern0x1b/shade): the emulator that boots a real iOS firmware's userland.
 
 > **Status: early.** The route, the interview, the build path from installing the tools to the
-> `.deb`, delivery to a device or a Cydia repository, self-review, Objective-C code and a reference
-> for xmake are written; skills for Swift, SwiftUI and Combine code are not yet. No test run
-> has passed yet. Each runtime's install line is marked with whether it has been verified.
+> `.deb`, delivery to a device or a Cydia repository, self-review, Objective-C, Swift and Combine
+> code, SwiftUI (what the pin lacks and what to do instead) and a reference for xmake are written.
+> No test run has passed yet. Each runtime's install line is marked with whether it has been verified.
 
 ## What you need
 

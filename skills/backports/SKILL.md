@@ -17,7 +17,8 @@ added after `apple_minimum`, there are three native answers, per API:
 2. **The release's own API** — the older way to do the same thing (for example `UIAlertView`
    instead of `UIAlertController` when the backport's behaviour is not what the app needs).
 3. **A version check** — `respondsToSelector:`, `[Class class] != nil` in Objective-C,
-   `#available` in Swift, and a path for the release that lacks it.
+   `#available` in Swift (a backport from Swift goes through the runtime's `backports` config,
+   skill `swift` §5), and a path for the release that lacks it.
 
 Never silence the check instead: no `-disable-availability-checking`, no
 `charon.waive.weak-imports` to get a package through, no copying a system library into the app.

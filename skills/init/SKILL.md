@@ -18,7 +18,8 @@ you look facts up yourself, and you stop only when every branch is settled and t
   An answer settles its node; an answer that breaks a constraint in §3 does not, and becomes a question.
 - Facts are yours to find, never the user's to supply: the host (`uname -sm`, `sw_vers`), whether
   `xcode-select -p`, `brew`, `xmake` exist, free disk (`df -h ~`), what the stack supports today (the
-  tables in §3 and the skills `emulate` and `backports`). Ask the user only for decisions.
+  tables in §3 and the skills `emulate`, `backports`, `swift`, `combine` and `swiftui`). Ask the user
+  only for decisions.
 
 ## 2. Rounds
 
@@ -46,8 +47,8 @@ something the stack cannot do, say what fails and where, and ask again.
 1. **Purpose** — what the app does in one sentence; its screens, each in one line; what the user does
    on each; the data it keeps; whether it talks to the network; gestures; notifications. Recommend the
    smallest first version that is still the app they asked for.
-2. **Lowest iOS release** [1] — becomes `apple_minimum`. Constraints: Swift needs 6.0 or later;
-   arm64 needs 7.0; armv7s needs 6.0; armv6 exists only up to 4.2.1; `weak` references need 5.0 (ARC
+2. **Lowest iOS release** [1] — becomes `apple_minimum`. Constraints: no Swift was built or checked
+   below 6.0 (skill `swift` §1); arm64 needs 7.0; armv7s needs 6.0; armv6 exists only up to 4.2.1; `weak` references need 5.0 (ARC
    below that needs the link flag the skill `project` gives). Each device has a highest release it
    can run: check the pair against the devices in node 4.
 3. **Releases to check** [2] — which releases the app is verified on. The emulator boots only some:
@@ -62,12 +63,16 @@ something the stack cannot do, say what fails and where, and ask again.
 5. **Architectures** [2, 4] — derive, do not ask unless it is a real choice: armv7 covers every device
    from the 3GS on; the original iPhone, the 3G and the first two iPod touch generations need armv6
    and a release no later than 4.2.1; add arm64 only for 64-bit devices on 7.0 and later.
-6. **Language** [2] — Objective-C or Swift. Recommend Objective-C below 6.0 (Swift cannot run there),
-   and for anything that must also build for arm64 (Swift on this stack is verified on armv7 only).
+6. **Language** [2] — Objective-C or Swift. Recommend Objective-C below 6.0 (no Swift was built or
+   checked there), and for anything that must also build for arm64 (the whole Swift runtime was
+   built for armv7 only). Before the user picks Swift, give them the choices of skill `swift` §1: at
+   this pin `xmake deb` refuses the runtime a Swift app carries.
 7. **Interface** [6] — UIKit in code, or SwiftUI (Swift only). There are no nibs or storyboards: the
    interface is built in code. Before recommending SwiftUI, check whether the pinned Charon provides
-   Eidolon as a package (`charon@eidolon`); if it does not, say so and recommend UIKit.
-8. **Combine** [6] — only with Swift; recommend it only when the app's data flow needs it.
+   Eidolon as a package (`charon@eidolon`, skill `swiftui` §1); if it does not, say so and recommend
+   UIKit.
+8. **Combine** [6] — only with Swift and its whole runtime; recommend it only when the app's data flow
+   needs it, and say first what Styx lacks (skill `combine` §3).
 9. **Frameworks and APIs** [1, 2] — list what the purpose needs (for example networking, storage,
    location, camera, maps). For each API introduced after the lowest release, look up whether the
    backports carry it (skill `backports`); the question is then "backport, or the older API?".

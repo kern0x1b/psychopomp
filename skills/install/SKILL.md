@@ -119,7 +119,8 @@ test -f <installdir>/manifest.txt && echo built || echo not-built
 - The same log shows `require(charon@iphoneos-sdk 16.4):` and `require(charon@ld64):` with their
   own `installdir:` lines; test them the same way for the whole picture. ld64 is printed without
   its version because it arrives first as the SDK package's dependency, which names none. For a Swift app, check
-  `/s/swift-runtime/` and `/s/swift/` the same way once the project requires them.
+  `/s/swift-runtime/` and `/s/swift/` the same way once the project requires them, and `/s/styx/`
+  when it requires Combine (skills `swift`, `combine`).
 
 ## 6. Configure once, and pay the first-build cost
 

@@ -69,7 +69,8 @@ Write these lines yourself, one decision each:
   bundles into `Frameworks/` a shared-library target of the project or a package the target adds,
   by the name the target knows it by.
 
-A Swift target adds Charon's `swift` rule and the Swift runtime packages; the package control file
+A Swift target adds Charon's `swift` rule and the Swift runtime packages (skill `xmake-swift`), and
+`charon@styx` for Combine (skill `combine`); the code is the skill `swift`. The package control file
 and maintainer are the skill `package`'s.
 
 ## 4. Info.plist
@@ -146,7 +147,7 @@ loads for a build), and what they mean:
 In `PROJECT.md` under `## Progress`, the project line: the target name, release and
 architectures, `plutil -lint` OK, the `xmake show` check, `.logs/configure.log`.
 
-Then write the code (skill `objc` for Objective-C), and build with the skill `build`.
+Then write the code (skill `objc` for Objective-C, `swift` for Swift), and build with the skill `build`.
 
 ## Traps
 

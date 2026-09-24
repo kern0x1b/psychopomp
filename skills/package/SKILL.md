@@ -9,7 +9,9 @@ description: Turn the built app into a Debian package for a jailbroken device wi
 the binaries with `ldid`, checks every import against the release's own libraries **as a release
 build** (a weak import the release lacks is refused here, where a plain build only warns), and
 writes a `.deb`. For an app that uses `charon@apple-backports`, or shares the Swift runtime, it
-also writes the `.deb` of each such dependency beside it and adds a `Depends` on it. Read
+also writes the `.deb` of each such dependency beside it and adds a `Depends` on it. At this pin a
+Swift app that carries its runtime is refused here, and a shared runtime was never built (skill
+`swift` §7). Read
 `PROJECT.md` first: `## Identity` gives the package name, version and maintainer; `## Publishing`
 says where the package goes next.
 

@@ -31,11 +31,11 @@ exactly `apple-backports`, and their configs are the skill `backports`'s.
 At `charon-repo-0.8.10` the repository has 18 packages. What a project requires itself, by
 purpose: `apple-backports` (newer API), `apple-compat` (functions the release lacks, linked
 hidden into the image), `libcxx` (the C++ runtime an app bundles), `openssl` (TLS and crypto,
-also built for the device), `swift-runtime` and `swift-embedded` (Swift), `styx` (Combine). The
+also built for the device), `swift-runtime` and `swift-embedded` (Swift), `styx` (Combine, skill `combine`). The
 rest come with Charon's includes or as their dependencies: `llvm`, `ld64`, `ldid`, `libplist`,
 `iphoneos-sdk`, `firmware-tools` (the toolchain), `swift`, `swift-bootstrap` (the Swift compiler),
 `shade`, `swiftshader`, `emulator-guest` (the emulator). There is no SwiftUI package at
-this pin: say so to the user rather than looking for one. List them in the project's clone:
+this pin: say so to the user rather than looking for one (skill `swiftui`). List them in the project's clone:
 `ls .xmake/macosx/arm64/repositories/charon/packages/*/`.
 
 ## 2. Inspect what the project resolves

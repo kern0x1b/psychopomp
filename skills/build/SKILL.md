@@ -23,7 +23,7 @@ xmake -y -v > .logs/build.log 2>&1; echo "exit $?"
 - Always `-y`, always `-v`, always a log file, and wait for it. Without `-v` xmake prints only the
   first warning and replaces the rest with `warning: add -v for getting more warnings ..`; a log
   holding that line has not been read, build again with `-v`. The first build after `install` is quick; a
-  build that adds a package (Swift runtime, backports) may build it from source first.
+  build that adds a package (Swift runtime, Styx, backports) may build it from source first.
 - `xmake -r -y -v` rebuilds the project's own files; `xmake f -c -y` re-resolves the
   configuration and packages after a change to `add_requires` or a package's configs (plain
   `xmake f` keeps the resolution it cached). Neither touches the shared store; nothing here needs
@@ -72,7 +72,7 @@ error: these imports are not exported by the device's iOS:
 
 The code calls a symbol the SDK declares but the lowest release does not have, strongly bound:
 the app would fail to load. It is checked against the release named in `apple_minimum`, not the
-SDK. Fix the code, not the check: use the API the release has (skill `objc`), or a
+SDK. Fix the code, not the check: use the API the release has (skill `objc` or `swift`), or a
 backport that carries it (skill `backports`). Never raise `apple_minimum` without the user's say,
 never silence availability warnings, never `-disable-availability-checking`.
 
@@ -90,8 +90,8 @@ each of which is NULL there and must be called only behind a check for it: _OBJC
 
 The compiler weak-linked a newer API because its declaration carries availability. It is NULL on
 the device: every use must sit behind a check (`NSClassFromString`, `respondsToSelector:`, a
-function pointer test, `#available` in Swift). `xmake deb` refuses the image unless the target
-says why every call is guarded: `set_values("charon.waive.weak-imports", "<the reason>")`. Write
+function pointer test, `#available` in Swift, skill `swift` §2). `xmake deb` refuses the image
+unless the target says why every call is guarded: `set_values("charon.waive.weak-imports", "<the reason>")`. Write
 that waiver only when every use of every symbol it covers is behind such a check, the user agreed,
 and it is written under `## Limits` in `PROJECT.md` (skill `self-review`) — it records a guard the
 static check cannot see; it is never a way to turn a refusal green. It covers the whole target: a

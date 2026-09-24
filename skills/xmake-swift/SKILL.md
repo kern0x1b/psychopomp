@@ -11,7 +11,9 @@ Charon compiles Swift with its own compiler, built from source, against a Swift 
 brings with it, because no old iOS ships one. This skill covers what `xmake.lua` has to say for
 that and what the rule does with it at the pin (`v0.8.10`, `charon-repo-0.8.10`). The Objective-C
 side of a mixed app is the skills `xmake-objc` and `objc`, the app target is the skill `project`,
-and reading the build is the skill `build`. Read `PROJECT.md` first: the language, the lowest
+and reading the build is the skill `build`. The Swift itself (the choice between the whole runtime
+and Embedded Swift, availability, UIKit, GCD) is the skill `swift`; Combine is the skill `combine`,
+SwiftUI the skill `swiftui` (no package at this pin). Read `PROJECT.md` first: the language, the lowest
 release, the architectures and the backports decide everything below.
 
 ## 1. The pieces
@@ -31,7 +33,8 @@ release, the architectures and the backports decide everything below.
     and no `async`. C calls it through `@_cdecl` functions (`v0.8.10:README.md:489-495`).
   Both, or neither, is refused when the target loads (`target(<Name>) compiles Swift, and its
   project requires both …` / `… requires neither: …`). The runtime without libcxx is refused too
-  (`… which links the C++ runtime: add_requires("charon@libcxx", …)`).
+  (`… which links the C++ runtime: add_requires("charon@libcxx", …)`). All three measured at the
+  pin, at `xmake f`.
 - **The compiler** is `charon@swift` 6.4.0, a host dependency of either package, built from its
   sources with two changes for old releases (`README.md:498-513`). The rule takes its `swiftc`
   from the package (`rules/swift/xmake.lua:147-150`). Not the Command Line Tools' `swiftc`: a
@@ -58,7 +61,8 @@ release, the architectures and the backports decide everything below.
   `swift.interop` and `swift.modulename` from generic xmake are not read.
 - A Swift library package names its module folders in `CHARON_SWIFT_MODULES`. The rule adds them
   as `-I` for every package the target uses (`:162-167`), so `import <Module>` works with
-  `add_requires` and `add_packages` alone.
+  `add_requires` and `add_packages` alone. At the pin that library is Styx, `import Combine`
+  (skill `combine`).
 
 ## 3. Architectures and releases
 
@@ -93,7 +97,8 @@ has checked:
   with `error: these imports are not exported by the device's iOS:` and one line per library of
   the runtime, e.g. `Frameworks/libswiftCore.dylib  weakly imports 9 symbols …` (Dispatch,
   Foundation and others likewise). Do not write `charon.waive.weak-imports` for them yourself. It
-  is a limit of Charon at this pin: tell the user and follow the skill `self-review`.
+  is a limit of Charon at this pin: tell the user (skill `swift` §7 says how) and follow the skill
+  `self-review`.
 - **One build of the runtime per program.** The libraries are built without library evolution. The
   program links the runtime's build mark by name (`rules/swift/xmake.lua:62-69`), and a target that
   reaches two builds is refused (`target(<Name>) links 2 builds of swift-runtime at once: …`,
@@ -102,11 +107,13 @@ has checked:
   for an application) makes what `charon@apple-backports` implements available from the program's
   release in Swift too. The rule then requires the program to carry the backports with the configs
   the runtime links (`coredata`, and `uikit` with `backports_uikit`), and names what is missing
-  (`rules/swift/xmake.lua:69-91`). Which API to take from the backports is the skill `backports`.
+  (`rules/swift/xmake.lua:69-91`). Which API to take from the backports is the skill `backports`;
+  calling them from Swift is the skill `swift` §5.
 
 ## 5. Objective-C and Swift in one app
 
-Only with the whole runtime. Embedded Swift has no Objective-C interoperation.
+Only with the whole runtime. Embedded Swift has no Objective-C interoperation. What the Swift
+itself must declare for Objective-C to see it is the skill `swift` §4.
 
 - **Swift calls Objective-C** of the same target through a bridging header:
   `add_values("swift.flags", "-import-objc-header", "<path/Bridging.h>")`. The rule passes it
